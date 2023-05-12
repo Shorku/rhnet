@@ -1,0 +1,3 @@
+pandas==1.4.2
+munch==2.5.0
+sparse==0.14.0

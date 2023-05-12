@@ -1,0 +1,85 @@
+solvent,formula,name,stype
+1,CO2,"carbon dioxide",OX
+2,CH4,"methane",PA
+3,C4H10,"n-butane",PA
+4,CClF2CH3,"1-chloro-1,1-difluoroethane",FR
+5,C4H10,"2-methylpropane",PA
+6,CF3CH2F,"1,1,1,2-tetrafluoroethane",FR
+7,C3H6,"propene",OL
+8,CHF2CH3,"1,1-difluoroethane",FR
+9,C2HF5,"pentafluoroethane",FR
+10,N2,"nitrogen",SG
+11,CH2Cl2,"dichloromethane",FR
+12,C4H8,"1-butene",OL
+13,C2H4,ethene,OL
+14,C6H12,"1-hexene",OL
+15,C3H8,propane,PA
+16,O2,oxygen,SG
+17,Ar,argon,SG
+18,C5H12,"n-pentane",PA
+19,C6H14,"n-hexane",PA
+20,C7H16,"n-heptane",PA
+21,C2H6,ethane,PA
+22,H2O,water,OX
+23,C6H5CH3,toluene,AR
+24,CH3OH,methanol,AL
+25,C2H5OH,ethanol,AL
+26,C3H7OH,"1-propanol",AL
+27,Xe,xenon,SG
+28,N2O,"dinitrogen monoxide",OX
+29,Kr,krypton,SG
+30,C5H12,isopentane,PA
+31,SO2,"sulphur dioxide",OX
+32,CHClF2,R22,FR
+33,CH2CF2,"vinylidene fluoride",OL
+34,H2,hydrogen,SG
+35,CF4,tetrafluoromethane,FR
+36,C2F6,hexafluoroethane,FR
+37,C3F8,octafluoropropane,FR
+38,CO,"carbon monoxide",OX
+39,C3H7OH,"2-propanol",AL
+40,C4H9OH,"1-butanol",AL
+41,C4H9OH,"2-butanol",AL
+42,C4H9OH,"isobutanol",AL
+43,CH3COCH3,"acetone",ON
+44,CH3COC2H5,"methylethylketone",ON
+45,CH3COOCH3,"methylacetate",ES
+46,CH3COOC3H7,"propylacetate",ES
+47,C8H18,"octane",PA
+48,C5H10,"cyclopentane",PA
+49,C6H12,"cyclohexane",PA
+50,C6H6,"benzene",AR
+51,C6H5C2H5,"ethylbenzene",AR
+52,C6H4(CH3)2,"p-xylene",AR
+53,C2H5OC2H5,"diethyl ether",ET
+54,CH3COOC2H5,"ethyl acetate",ES
+55,C6H5NO2,nitrobenzene,AR
+56,C5H11OH,"1-pentanol",AL
+57,C6H13OH,"1-hexanol",AL
+58,CH2ClCH2Cl,"1,2-dichloroethane",FR
+59,CHCl3,"chloroform",FR
+60,C4H8O,"tetrahydrofuran",HC
+61,C6H4(CH3)2,"m-xylene",AR
+62,C9H20,"nonane",PA
+63,SO2,"sulfur dioxide",OX
+64,H2S,"hydrogen sulfide",HD
+65,C4H6,"1`3-butadiene",OL
+66,C2H4O,"ethylene oxide",HC
+67,CH3OCOOCH3,"dimethyl carbonate",ES
+68,SF6,"sulfur hexafluoride",HL
+69,CCl4,"carbon tetrachloride",HL
+70,C5H12,"neopentane",PA
+71,PO(CH3)(OCH3)2,"dimethyl methyl phosphonate",OX
+72,C4H9OH,"tert-butyl alcohol",AL
+73,C6H12O2,"butyl acetate",ES
+74,ClO2,"chlorine dioxide",OX
+75,Cl2,"chlorine",SG
+76,He,"helium",SG
+77,Ne,"neon",SG
+78,C2H2,"acetylene",YN
+79,C8H18,"isooctane, 2,2,4-trimethylpentane",PA
+80,C4H8O2,"1,4-dioxane",ET
+81,C2H5COC2H5,"diethyl ketone",ON
+82,C3H7OC3H7,"di-n-propyl ether",ET
+83,CH3NO2,"nitromethane",NI
+84,(C2H3)OCOCH3,"vinyl acetate",OL
