@@ -4,7 +4,7 @@ This repository contains a script to train and evaluate a convolutional neural
 network (CNN) to predict a gas/solvent weight fraction in a (possibly swollen) 
 polymer using a pre-calculated distribution of the electron density.
 
-<img src="images/dalle_fantasy.png" width="400">
+<img src="images/dalle_fantasy.png" width="300">
 
 *(image created using DALL·E 2)*
 
@@ -60,8 +60,8 @@ verification models (see for example
 ## Reference
 
 The research paper with detailed description of the project is available 
-on-line at [ChemRxiv](https://doi.org/10.26434/chemrxiv-2023-tqv4p). In case you find the model or the dataset useful
-please cite:
+on-line at [ChemRxiv](https://doi.org/10.26434/chemrxiv-2023-tqv4p). In case 
+you find the model or the dataset useful please cite:
 
 Gromov, O.I. Predicting the Solubility of Gases, Vapors, and Supercritical 
 Fluids in Amorphous Polymers from Electron Density using Convolutional Neural
@@ -677,12 +677,21 @@ optional arguments:
 
 
 ## TODO
+### General
 - complete documentation
+### Inference
 - inference untility
 - XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
-- add ORCA docker
+- prune and upload fitted models
+- utility for nice inference reports (Matplotlib + LaTeX?)
+### Maintenance
+- test automation
+- compactize model definition code
+### Further development
 - on-the-fly translational and rotational augmentation
-- utility for inference reports (Matplotlib + LaTeX?)
+### Misc minor stuff
+- unify feature selection
+- add ORCA docker
 
 
 ## Notes

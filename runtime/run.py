@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from runtime.metrics import MaxAbsoluteError, Log2MAPE
-
 
 def train(params, model, dataset, logger, fold_no=None):
     """Wrapper for RhNet training loop (with optional evaluation): define
@@ -188,8 +186,6 @@ def train_custom(params, model, dataset, optimizer, checkpoint,
     max_steps = params.max_steps
     epochs = params.epochs
 
-    maxae_metr = MaxAbsoluteError(name='maxae_loss')
-    exp_mape_metr = Log2MAPE(name='exp_mape_loss')
     mse_metr = tf.keras.metrics.MeanSquaredError(name='mse_loss')
 
     @tf.function
@@ -201,8 +197,6 @@ def train_custom(params, model, dataset, optimizer, checkpoint,
                 losses. \
                 MeanSquaredError(name='mse_loss')
             mse = mse_loss(frac_true, frac_pred)
-            maxae_metr(frac_true, frac_pred)
-            exp_mape_metr(frac_true, frac_pred)
             mse_metr(frac_true, frac_pred)
 
             if params.dnn_l2 or params.cnn_l2:
@@ -241,14 +235,8 @@ def train_custom(params, model, dataset, optimizer, checkpoint,
             train_step(mixtures, fractions)
             if i % params.log_every == 0:
                 logger.log(step=(epoch + 1, i, max(step, max_steps)),
-                           data={"train_maxae_loss":
-                                 float(maxae_metr.result()),
-                                 "train_exp_mape_loss":
-                                 float(exp_mape_metr.result()),
-                                 "train_mse_loss":
+                           data={"train_mse_loss":
                                  float(mse_metr.result())})
-                maxae_metr.reset_states()
-                exp_mape_metr.reset_states()
                 mse_metr.reset_states()
 
             if epoch == 0:
@@ -299,15 +287,11 @@ def evaluate_custom(model, dataset, logger, epoch, fold_no):
         None
 
     """
-    maxae_eval = MaxAbsoluteError(name='maxae_eval')
-    exp_mape_eval = Log2MAPE(name='exp_mape_loss')
     mse_eval = tf.keras.metrics.MeanSquaredError(name='mse_eval')
 
     @tf.function
     def evaluation_step(features, frac_true):
         frac_pred = model(features, False)
-        maxae_eval(frac_true, frac_pred)
-        exp_mape_eval(frac_true, frac_pred)
         mse_eval(frac_true, frac_pred)
 
     for i, (mixtures, fractions) in enumerate(dataset.
@@ -316,9 +300,7 @@ def evaluate_custom(model, dataset, logger, epoch, fold_no):
         evaluation_step(mixtures, fractions)
 
     logger.log(step=(epoch + 1, epoch + 1),
-               data={"eval_maxae_loss": float(maxae_eval.result()),
-                     "eval_exp_mape_loss": float(exp_mape_eval.result()),
-                     "eval_mse_loss": float(mse_eval.result())})
+               data={"eval_mse_loss": float(mse_eval.result())})
     logger.flush()
 
 

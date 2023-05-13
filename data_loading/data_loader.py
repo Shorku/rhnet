@@ -13,7 +13,8 @@ from model.params import scale_params, image_dim, macro_dim
 
 
 class Dataset:
-    """Load, separate and prepare the data for training and prediction"""
+    """Base class with common functionality needed to load, separate and
+    prepare the data for training and prediction"""
 
     def __init__(self, params):
         # Initialize general parameters
@@ -22,12 +23,8 @@ class Dataset:
                                     format(params.data_dir))
         self._data_dir = params.data_dir
         self._batch_size = params.batch_size
-        self.analysis_n = params.analysis_n
-        self.store_density = params.store_density
         self.log_dir = params.log_dir
         self.log_name = params.log_name
-        self.make_even = params.make_even
-        self.data_csv = params.data_csv
         self.precision = tf.float16 if params.use_amp else tf.float32
         self.load_precision = np.float16 if params.use_amp else np.float32
         self.image_dim = image_dim()
@@ -37,12 +34,6 @@ class Dataset:
                                       dtype=self.precision)
         self.labl_dim = tf.TensorSpec(shape=(1,),
                                       dtype=self.precision)
-        self.aug = params.augment
-        self.fold = params.fold
-        self.eval_split = params.eval_split
-        self.eval_define = params.eval_define
-        self.holdout_define = params.holdout_define
-        self.restrict_to_define = params.restrict_to_define
         self.use_only_mw = params.use_only_mw
         self.use_only_amorph = params.use_only_amorph
         self.use_tg = params.use_tg
@@ -53,16 +44,116 @@ class Dataset:
         self.data_scale = scale_params()
         # Load oligomers/solvents masses from polymer_mass.csv/solvent_mass.csv
         self.poly_mass, self.solv_mass = self._load_mass()
+        # Make a list of selected macro features
+        self.features = ['pressure', 'temperature']
+        self.solv_macro_features = []
+        self.poly_macro_features = []
+        if not self.use_only_amorph:
+            self.features = ['cryst'] + self.features
+        if self.use_only_mw:
+            self.features = ['mw'] + self.features
+            self.poly_macro_features = self.poly_macro_features + ['mw']
+        else:
+            self.features = ['mn', 'mw'] + self.features
+            self.poly_macro_features = self.poly_macro_features + ['mn', 'mw']
+        if self.use_tg:
+            self.features = self.features + ['tg']
+            self.poly_macro_features = self.poly_macro_features + ['tg']
+        if self.use_dens:
+            self.features = self.features + ['dens']
+            self.poly_macro_features = self.poly_macro_features + ['dens']
+        if self.use_bt:
+            self.features = self.features + ['bt']
+            self.solv_macro_features = self.solv_macro_features + ['bt']
+        if self.use_ctp:
+            self.features = self.features + ['ct', 'cp']
+            self.solv_macro_features = self.solv_macro_features + ['ct', 'cp']
         # Load solvents macroscopic features from solvent_macro_features.csv
-        macro_feature = self._load_macro(self.data_scale)
+        if self.solv_macro_features:
+            self.macro_feature = self._load_macro(self.data_scale)
+        # Define a place to store electron density loaded during run
+        self.poly_cube_set = {}
+        self.solv_cube_set = {}
+
+    def _load_cube(self, name):
+        """Load one electron density file, expects filename.npy as name"""
+        cube = np.load(os.path.join(self._data_dir, 'cubes', name))
+        cube[:, :, :, 0] = cube[:, :, :, 0] / self.data_scale.el_scale
+        cube[:, :, :, 1] = np.clip(cube[:, :, :, 1], 0.0,
+                                   1.0) / self.data_scale.sp_scale
+        return cube
+
+    def _load_cube_sparse(self, name):
+        """Load one electron density file and return sparse tensor,
+        expects filename.npy as name"""
+        return sparse.COO.from_numpy(
+            self._load_cube(name).astype(self.load_precision))
+
+    def _load_cube_dense(self, name):
+        """Load one electron density file and return dense tensor,
+         expects filename.npy as name"""
+        return self._load_cube(name).astype(self.load_precision)
+
+    def _load_mass(self):
+        """Load masses of compounds to Pandas dataframe"""
+        poly_mass = pd.read_csv(os.path.join(self._data_dir,
+                                             'polymer_mass.csv'),
+                                dtype={'polymer': np.uint8,
+                                       'cut': np.uint8,
+                                       'poly_mass': np.float32})
+
+        solv_mass = pd.read_csv(os.path.join(self._data_dir,
+                                             'solvent_mass.csv'),
+                                dtype={'solvent': np.uint8,
+                                       'solv_mass': np.float32})
+
+        return poly_mass, solv_mass
+
+    def _load_macro(self, scale):
+        """Load solvent macroscopic parameters to Pandas dataframe"""
+        data_types = {i: np.float32 for i in self.solv_macro_features}
+        data_types['solvent'] = np.uint8
+        macro_feature = pd.read_csv(os.path.join(self._data_dir,
+                                                 'solvent_macro_features.csv'),
+                                    dtype=data_types,
+                                    usecols=['solvent'] +
+                                    self.solv_macro_features)
+        if self.use_ctp:
+            macro_feature['cp'] = macro_feature['cp']. \
+                apply(np.log10).sub(scale.p_shift).div(scale.p_scale)
+            macro_feature['ct'] = macro_feature['ct']. \
+                sub(scale.t_shift).div(scale.t_scale)
+        if self.use_bt:
+            macro_feature['bt'] = macro_feature['bt']. \
+                sub(scale.t_shift).div(scale.t_scale)
+        macro_feature[self.solv_macro_features] = macro_feature[
+            self.solv_macro_features].apply(self.load_precision)
+        return macro_feature
+
+
+class DatasetFit(Dataset):
+    """Load, separate and prepare the data for training and prediction"""
+
+    def __init__(self, params):
+        # Initialize general parameters
+        super().__init__(params)
+        self.analysis_n = params.analysis_n
+        self.store_density = params.store_density
+        self.make_even = params.make_even
+        self.data_csv = params.data_csv
+        self.aug = params.augment
+        self.fold = params.fold
+        self.eval_split = params.eval_split
+        self.eval_define = params.eval_define
+        self.holdout_define = params.holdout_define
+        self.restrict_to_define = params.restrict_to_define
         # Load number of available conformations from polymers.txt/solvents.txt
         poly_conf_num, solv_conf_num = self._load_num_conf()
         # Prepare dataset tables
         self.index_table, \
             self.exp_set = self._form_index_tables(self.data_scale,
                                                    poly_conf_num,
-                                                   solv_conf_num,
-                                                   macro_feature)
+                                                   solv_conf_num)
         # Get sampling number for a single experiment
         self.exp_mapper = self._get_exp_sampling(self.exp_set)
         self.exp_set = self.exp_set.set_index(['expno', 'cut'])
@@ -77,7 +168,7 @@ class Dataset:
                 self.index_table_eval = self._index_eval_split(self.exp_set)
             # actual training table will be sampled each epoch while
             # evaluation table is sampled here once per training run
-            self.index_table_eval = self.\
+            self.index_table_eval = self. \
                 index_table_sampling(self.index_table_eval)
             self.index_table_train.reset_index(inplace=True, drop=True)
             self.index_table_eval.reset_index(inplace=True, drop=True)
@@ -85,41 +176,9 @@ class Dataset:
             if 'error_analysis' not in params.exec_mode:
                 del self.index_table
                 gc.collect()
-        # Make a list of selected macro features
-        self.features = ['pressure', 'temperature']
-        if not self.use_only_amorph:
-            self.features = ['cryst'] + self.features
-        else:
-            self.exp_set.drop(['cryst'], axis=1, inplace=True)
-        if self.use_only_mw:
-            self.features = ['mw'] + self.features
-            self.exp_set.drop(['mn'], axis=1, inplace=True)
-        else:
-            self.features = ['mn', 'mw'] + self.features
-        if self.use_tg:
-            self.features = self.features + ['tg']
-        else:
-            self.exp_set.drop(['tg'], axis=1, inplace=True)
-        if self.use_dens:
-            self.features = self.features + ['dens']
-        else:
-            self.exp_set.drop(['dens'], axis=1, inplace=True)
-        if self.use_bt:
-            self.features = self.features + ['bt']
-        else:
-            self.exp_set.drop(['bt'], axis=1, inplace=True)
-        if self.use_ctp:
-            self.features = self.features + ['ct', 'cp']
-        else:
-            self.exp_set.drop(['ct', 'cp'], axis=1, inplace=True)
         # Load electron density
         if self.store_density == 'ram':
-            self.poly_cube_set = self._load_cubes('p')
-            self.solv_cube_set = self._load_cubes('s')
-        # or define a place to store electron density if loaded during fit
-        elif self.store_density == 'cache':
-            self.poly_cube_set = {}
-            self.solv_cube_set = {}
+            self._load_cubes()
         # Drop some columns from index tables to save some memory
         try:
             self.index_table
@@ -144,19 +203,18 @@ class Dataset:
 
     def _load_experimental(self, scale):
         """Load experimental data set to Pandas dataframe"""
+        data_types = {i: np.float32 for i in self.poly_macro_features}
+        data_types.update({'expno': np.uint16,
+                           'polymer': np.uint8,
+                           'solvent': np.uint8,
+                           'pressure': np.float32,
+                           'temperature': np.float32,
+                           'cryst': self.load_precision,
+                           'wa': np.float32})
+        use_columns = ['expno', 'polymer', 'solvent', 'pressure',
+                       'temperature', 'cryst', 'wa'] + self.poly_macro_features
         exp_set = pd.read_csv(os.path.join(self._data_dir, self.data_csv),
-                              dtype={'expno': np.uint16,
-                                     'polymer': np.uint8,
-                                     'solvent': np.uint8,
-                                     'mn': np.float32,
-                                     'mw': np.float32,
-                                     'cryst': self.load_precision,
-                                     'tg': np.float32,
-                                     'dens': np.float32,
-                                     'pressure': np.float32,
-                                     'temperature': np.float32,
-                                     'wa': np.float32}).drop(['doi',
-                                                              'notes'], axis=1)
+                              dtype=data_types, usecols=use_columns)
         if self.restrict_to_define:
             restrict_to_pairs = pd.read_csv(self.restrict_to_define,
                                             dtype={'polymer': np.uint8,
@@ -186,50 +244,38 @@ class Dataset:
                          exp_set['solv_mass'] /
                          (1 - exp_set['wa']))
 
-        exp_set.loc[:,
-                    ['dens',
-                     'mn',
-                     'mw']] = exp_set.loc[:,
-                                          ['dens',
-                                           'mn',
-                                           'mw']].div(exp_set['poly_mass'],
-                                                      axis=0)
+        feat_to_scale = list(set(use_columns) & {'dens', 'mn', 'mw'})
+        exp_set.loc[:, feat_to_scale] = exp_set.loc[:, feat_to_scale]. \
+            div(exp_set['poly_mass'], axis=0)
 
-        exp_set[['mn',
-                 'mw',
-                 'dens',
-                 'pressure',
-                 'wa']] = exp_set[['mn',
-                                   'mw',
-                                   'dens',
-                                   'pressure',
-                                   'wa']].apply(np.log10)
+        feat_to_scale = list(set(use_columns) & {'mn', 'mw', 'dens',
+                                                 'pressure', 'wa'})
+        exp_set[feat_to_scale] = exp_set[feat_to_scale].apply(np.log10)
 
-        exp_set[['mn', 'mw']] = exp_set[['mn', 'mw']]. \
+        feat_to_scale = ['mw'] if self.use_only_mw else ['mn', 'mw']
+        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
             sub(scale.mnw_shift).div(scale.mnw_scale)
         exp_set['pressure'] = exp_set['pressure']. \
             sub(scale.p_shift).div(scale.p_scale)
-        exp_set[['temperature', 'tg']] = exp_set[['temperature', 'tg']]. \
-            sub(scale.t_shift).div(scale.t_scale)
-        exp_set['dens'] = exp_set['dens']. \
-            sub(scale.d_shift).div(scale.d_scale)
 
-        exp_set[['mn',
-                 'mw',
-                 'tg',
-                 'dens',
-                 'pressure',
-                 'temperature',
-                 'wa']] = exp_set[['mn',
-                                   'mw',
-                                   'tg',
-                                   'dens',
-                                   'pressure',
-                                   'temperature',
-                                   'wa']].apply(self.load_precision)
+        feat_to_scale = ['temperature',
+                         'tg'] if self.use_tg else ['temperature']
+        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
+            sub(scale.t_shift).div(scale.t_scale)
+
+        if self.use_dens:
+            exp_set['dens'] = exp_set['dens']. \
+                sub(scale.d_shift).div(scale.d_scale)
+
+        feat_to_scale = list(set(use_columns) & {'mn', 'mw', 'tg', 'dens',
+                                                 'pressure', 'temperature',
+                                                 'wa'})
+        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
+            apply(self.load_precision)
 
         if self.use_only_amorph:
             exp_set = exp_set.drop(exp_set[exp_set.cryst > 0.001].index)
+            exp_set.drop(['cryst'], axis=1, inplace=True)
         exp_set = exp_set.drop(['poly_mass', 'solv_mass'], axis=1)
 
         return exp_set
@@ -252,8 +298,9 @@ class Dataset:
                 df = pd.DataFrame({'polymer': poly,
                                    'cut': cut + 1,
                                    'pconformer':
-                                   [i for i
-                                    in range(1, iconf + 1)]}).astype(np.uint8)
+                                       [i for i
+                                        in range(1, iconf + 1)]}).astype(
+                    np.uint8)
                 poly_conf_list.append(df)
         poly_df = pd.concat(poly_conf_list, ignore_index=True)
 
@@ -276,73 +323,19 @@ class Dataset:
                 solv_df.merge(aug_df, how='cross').
                 rename(columns={'aug': 'saug'}))
 
-    def _load_mass(self):
-        """Load masses of compounds to Pandas dataframe"""
-        poly_mass = pd.read_csv(os.path.join(self._data_dir,
-                                             'polymer_mass.csv'),
-                                dtype={'polymer': np.uint8,
-                                       'cut': np.uint8,
-                                       'poly_mass': np.float32})
-
-        solv_mass = pd.read_csv(os.path.join(self._data_dir,
-                                             'solvent_mass.csv'),
-                                dtype={'solvent': np.uint8,
-                                       'solv_mass': np.float32})
-
-        return poly_mass, solv_mass
-
-    def _load_macro(self, scale):
-        """Load experimental data set to Pandas dataframe"""
-        macro_feature = pd.read_csv(os.path.join(self._data_dir,
-                                                 'solvent_macro_features.csv'),
-                                    dtype={'solvent': np.uint8,
-                                           'bt': np.float32,
-                                           'ct': np.float32,
-                                           'cp': np.float32})
-
-        macro_feature['cp'] = macro_feature['cp']. \
-            apply(np.log10).sub(scale.p_shift).div(scale.p_scale)
-
-        macro_feature[['ct', 'bt']] = macro_feature[['ct', 'bt']]. \
-            sub(scale.t_shift).div(scale.t_scale)
-
-        macro_feature[['cp',
-                       'ct',
-                       'bt']] = macro_feature[['cp',
-                                               'ct',
-                                               'bt']]. \
-            apply(self.load_precision)
-
-        return macro_feature
-
-    def _load_cube_sparse(self, name):
-        """Load one electron density file, expects filename.npy as name"""
-        cube = np.load(os.path.join(self._data_dir, 'cubes', name))
-        cube[:, :, :, 0] = cube[:, :, :, 0] / self.data_scale.el_scale
-        cube[:, :, :, 1] = np.clip(cube[:, :, :, 1], 0.0,
-                                   1.0) / self.data_scale.sp_scale
-        return sparse.COO.from_numpy(cube.astype(self.load_precision))
-
-    def _load_cube_dense(self, name):
-        """Load one electron density file, expects filename.npy as name"""
-        cube = np.load(os.path.join(self._data_dir, 'cubes', name))
-        cube[:, :, :, 0] = cube[:, :, :, 0] / self.data_scale.el_scale
-        cube[:, :, :, 1] = np.clip(cube[:, :, :, 1], 0.0,
-                                   1.0) / self.data_scale.sp_scale
-        return cube.astype(self.load_precision)
-
-    def _load_cubes(self, component):
+    def _load_cubes(self):
         """Load electron density into RAM"""
         compound_set = {'p': self.index_table['polymer'].unique(),
                         's': self.index_table['solvent'].unique()}
-        cubes_dict = {}
         for i in os.listdir(os.path.join(self._data_dir, 'cubes')):
             if ('.npy' in i
-                    and component in i.split('_')[0]
-                    and int(i.split('_')[1]) in compound_set[component]):
-                cubes_dict[i.split('.')[0]] = self._load_cube_sparse(i)
-
-        return cubes_dict
+                    and int(i.split('_')[1]) in compound_set[i.split('_')[0]]):
+                if i.split('_')[0] == 'p':
+                    self.poly_cube_set[
+                        i.split('.')[0]] = self._load_cube_sparse(i)
+                elif i.split('_')[0] == 's':
+                    self.solv_cube_set[
+                        i.split('.')[0]] = self._load_cube_sparse(i)
 
     def cube_from_df(self, df_sample, df_exp):
         """Form dictionary key to retrieve array with electron density"""
@@ -361,7 +354,7 @@ class Dataset:
         ]))
 
         if self.store_density == 'ram':
-            return self.poly_cube_set[poly].todense(),\
+            return self.poly_cube_set[poly].todense(), \
                 self.solv_cube_set[solv].todense()
         elif self.store_density == 'cache':
             if poly not in self.poly_cube_set:
@@ -370,7 +363,7 @@ class Dataset:
             if solv not in self.solv_cube_set:
                 self.solv_cube_set[solv] = \
                     self._load_cube_sparse(f'{solv}.npy')
-            return self.poly_cube_set[poly].todense(),\
+            return self.poly_cube_set[poly].todense(), \
                 self.solv_cube_set[solv].todense()
         else:
             return (self._load_cube_dense(f'{poly}.npy'),
@@ -379,8 +372,7 @@ class Dataset:
     def _form_index_tables(self,
                            data_scale,
                            poly_conf_num,
-                           solv_conf_num,
-                           macro_feature):
+                           solv_conf_num):
         """Combinations of experiment/polymers oligomer/conformer/augment"""
         # Form possible combinations of compounds/conformers/cuts/augmentations
         poly_set, solv_set = self._conf_comb(poly_conf_num, solv_conf_num)
@@ -394,8 +386,9 @@ class Dataset:
             sample(frac=1, ignore_index=True),
 
             exp_set.
-            merge(macro_feature, on='solvent')
-               )
+            merge(self.macro_feature, on='solvent') if self.solv_macro_features
+            else exp_set
+        )
 
     def _get_exp_sampling(self, exp_val_set):
         """Balanced amount of conformations/augmentations per experiment"""
@@ -408,18 +401,18 @@ class Dataset:
         min_num_exp_per_pair = num_exp_per_pair['experiments'].min()
         min_sample = self.index_table.groupby('expno')['expno'].count().min()
 
-        target_samp_per_exp = num_exp_per_pair.\
-            copy().\
+        target_samp_per_exp = num_exp_per_pair. \
+            copy(). \
             rename(columns={'experiments': 'samples'})
 
-        target_samp_per_exp['samples'] = min_sample\
-            * min_num_exp_per_pair\
+        target_samp_per_exp['samples'] = min_sample \
+            * min_num_exp_per_pair \
             // num_exp_per_pair['experiments']
 
         if target_samp_per_exp['samples'].eq(0).any():
             raise RuntimeError('Found zero usages of experimental points!')
 
-        mapper_index = target_samp_per_exp.\
+        mapper_index = target_samp_per_exp. \
             merge(exp_val_set,
                   how='inner',
                   on=['polymer', 'solvent'])[['expno', 'samples']]
@@ -447,8 +440,8 @@ class Dataset:
 
     def _index_eval_split(self, exp_val_set):
         """Split total dataset into train, validation and test sets"""
-        pairs = exp_val_set[['polymer', 'solvent']].\
-            drop_duplicates().\
+        pairs = exp_val_set[['polymer', 'solvent']]. \
+            drop_duplicates(). \
             sample(frac=1)
         if self.eval_define:
             pairs_eval = pd.read_csv(self.eval_define)
@@ -456,7 +449,7 @@ class Dataset:
             pairs_eval = pairs.merge(pairs_eval, how='inner',
                                      on=['polymer', 'solvent'])
         elif self.eval_split:
-            pairs_eval = pairs.sample(frac=1/self.eval_split)
+            pairs_eval = pairs.sample(frac=1 / self.eval_split)
         else:
             raise RuntimeError('For some reason we are trying to split' +
                                'the dataset with no way to split defined')
@@ -510,7 +503,7 @@ class Dataset:
             return self.index_table
         if is_evaluation:
             if self.fold:
-                sample_table = self.\
+                sample_table = self. \
                     index_table_sampling(self.index_table_folds[fold_no])
             elif self.eval_split or self.eval_define:
                 return self.index_table_eval
@@ -522,7 +515,7 @@ class Dataset:
                     pd.concat([df for i, df
                                in enumerate(self.index_table_folds)
                                if i != fold_no])
-                )
+                                    )
         elif self.eval_split or self.eval_define:
             sample_table = self.index_table_sampling(self.index_table_train)
         else:
@@ -580,10 +573,11 @@ class Dataset:
                                                           with_zeros,
                                                           fold_no),
                                output_signature=(
-                       (self.cube_dim, self.cube_dim, self.macr_dim),
-                       self.labl_dim,
-                                                )
-                              )
+                                   (self.cube_dim, self.cube_dim,
+                                    self.macr_dim),
+                                   self.labl_dim,
+                               )
+                               )
 
             dataset = dataset.batch(self._batch_size, drop_remainder=True)
             dataset = dataset.prefetch(self._batch_size)
