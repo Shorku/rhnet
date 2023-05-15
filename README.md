@@ -316,8 +316,22 @@ Following is a list of the available parameters for the `main.py` script:
 * `--model_dir`: The directory to save checkpoints and the trained model. 
 DEFAULT: `./results`. 
 * `--data_dir`: The directory containing the dataset. Required parameter.
-* `--data_csv`: The .csv file containing experimental sorption data. 
-    DEFAULT: `experimental_dataset.csv`.
+* `--data_csv`: The .csv file containing experimental sorption data. The `.csv` file should look like
+    (DEFAULT: `experimental_dataset.csv`):
+```bash
+expno,polymer,solvent,mn,mw,cryst,tg,dens,pressure,temperature,wa,doi,notes
+1,1,11,18000,80000,0,593,1.2,0.002,283.5,0.08,"10.1021/ie3027873","Huntsman Advanced Materials"
+2,1,11,18000,80000,0,593,1.2,0.004,283.5,0.10,"10.1021/ie3027873","Huntsman Advanced Materials"
+...
+```
+* `--to_pred_csv`: The .csv file containing intended for prediction parameters
+    ranges. The `.csv` file should look like (DEFAULT: `to_predict_ranges.csv`):
+```bash
+polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
+1,1,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308,15,3
+1,10,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308,15,3
+...
+```
 * `--api`: Whether to use Keras builtin or custom training/evaluating loop:
    * `builtin`: (DEFAULT) use builtin Keras loops
    * `custom`: use custom loops
@@ -451,10 +465,10 @@ python main.py --help
 The following example output is printed when running the model:
 ```python main.py --help
 usage: main.py [-h] [--exec_mode {train,evaluate,predict,error_analysis,train_and_error_analysis}] 
-               [--model_dir MODEL_DIR] --data_dir DATA_DIR [--data_csv DATA_CSV]
-               [--api {builtin,custom}] [--store_density {ram,file,cache}] 
-               [--log_dir LOG_DIR] [--log_name LOG_NAME] [--log_every LOG_EVERY] 
-               [--use_amp] [--use_xla] [--model MODEL] 
+               [--model_dir MODEL_DIR] [--data_dir DATA_DIR] [--data_csv DATA_CSV]
+               [--to_pred_csv TO_PRED_CSV] [--api {builtin,custom}] 
+               [--store_density {ram,file,cache}] [--log_dir LOG_DIR] [--log_name LOG_NAME]
+               [--log_every LOG_EVERY] [--use_amp] [--use_xla] [--model MODEL] 
                [--activation {relu,sigmoid,tanh,leaky_relu,elu}] 
                [--pooling {av,max}] [--save_model] [--resume_training] 
                [--load_model] [--use_only_mw] [--use_only_amorph] [--use_tg]
@@ -481,6 +495,9 @@ optional arguments:
   --data_dir DATA_DIR   Directory with the dataset
   --data_csv DATA_CSV   CSV file with experimental part of the dataset relative 
                         to data_dir
+  --to_pred_csv TO_PRED_CSV   
+                        CSV file with intended for prediction parameters
+                        ranges
   --api {builtin,custom}
                         Whether to use Keras builtin or custom training loop
   --store_density {ram,file,cache}

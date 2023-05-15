@@ -132,7 +132,7 @@ class Dataset:
 
 
 class DatasetFit(Dataset):
-    """Load, separate and prepare the data for training and prediction"""
+    """Load, separate and prepare the data for training and analysis"""
 
     def __init__(self, params):
         # Initialize general parameters
@@ -244,6 +244,7 @@ class DatasetFit(Dataset):
                          exp_set['solv_mass'] /
                          (1 - exp_set['wa']))
 
+        # TODO move feature scaling to the parent class
         feat_to_scale = list(set(use_columns) & {'dens', 'mn', 'mw'})
         exp_set.loc[:, feat_to_scale] = exp_set.loc[:, feat_to_scale]. \
             div(exp_set['poly_mass'], axis=0)
@@ -357,6 +358,7 @@ class DatasetFit(Dataset):
             return self.poly_cube_set[poly].todense(), \
                 self.solv_cube_set[solv].todense()
         elif self.store_density == 'cache':
+            # TODO replace with setdefault method and test
             if poly not in self.poly_cube_set:
                 self.poly_cube_set[poly] = \
                     self._load_cube_sparse(f'{poly}.npy')
@@ -584,4 +586,66 @@ class DatasetFit(Dataset):
         else:
             dataset = None
 
+        return dataset
+
+
+class DatasetPred(Dataset):
+    """Load and prepare the data for inference"""
+
+    def __init__(self, params):
+        # Initialize general parameters
+        super().__init__(params)
+        self.to_pred_csv = params.to_pred_csv
+
+    def _index_table(self):
+        data_types = {'polymer': np.uint8,
+                      'solvent': np.uint8,
+                      'mn': np.float32,
+                      'mw': np.float32,
+                      'cryst': self.load_precision,
+                      'tg': np.float32,
+                      'dens': np.float32,
+                      'pmin': np.float32,
+                      'pmax': np.float32,
+                      'npstep': np.uint8,
+                      'tmin': np.float32,
+                      'tmax': np.float32,
+                      'ntstep': np.uint8}
+        ranges = pd.read_csv(os.path.join(self._data_dir, self.to_pred_csv),
+                             dtype=data_types)
+        # TODO complete it
+
+    def cube_from_df(self, df_sample):
+        poly = int(df_sample.at['polymer'])
+        solv = int(df_sample.at['solvent'])
+        return (
+            self.poly_cube_set.setdefault(poly, self._load_cube_sparse(
+                f'{poly}.npy')).todense(),
+            self.solv_cube_set.setdefault(solv, self._load_cube_sparse(
+                f'{solv}.npy')).todense()
+                )
+
+    def set_generator(self):
+        """Combine defined macroscopic parameters with related solvent/polymer
+        electron density"""
+        sample_table = self._index_table()
+        sample_size = len(sample_table)
+        log_name = f'full_table_{self.log_name}.csv'
+        log_path = os.path.join(self.log_dir, log_name)
+        sample_table.to_csv(log_path, index=False)
+
+        for s in range(0, sample_size):
+            table_slice = sample_table.iloc[s]
+            yield (*self.cube_from_df(table_slice),
+                   np.array(table_slice.loc[self.features]))
+
+    def data_gen(self):
+        """Input function for inference"""
+        dataset = tf.data.Dataset.from_generator(self.set_generator,
+                                                 output_signature=(
+                                                     self.cube_dim,
+                                                     self.cube_dim,
+                                                     self.macr_dim))
+        dataset = dataset.batch(self._batch_size, drop_remainder=False)
+        dataset = dataset.prefetch(self._batch_size)
         return dataset

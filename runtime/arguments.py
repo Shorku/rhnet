@@ -31,6 +31,12 @@ PARSER.add_argument('--data_csv',
                     help="""CSV file with experimental part of the dataset
                     relative to data_dir""")
 
+PARSER.add_argument('--to_pred_csv',
+                    type=str,
+                    default='to_predict_ranges.csv',
+                    help="""CSV file with intended for prediction parameters
+                    ranges""")
+
 PARSER.add_argument('--api',
                     choices=['builtin', 'custom'],
                     type=str,
@@ -254,6 +260,7 @@ def parse_args(flags):
         'model_dir': flags.model_dir,
         'data_dir': flags.data_dir,
         'data_csv': flags.data_csv,
+        'to_pred_csv': flags.to_pred_csv,
         'api': flags.api,
         'store_density': flags.store_density,
         'log_dir': flags.log_dir,
