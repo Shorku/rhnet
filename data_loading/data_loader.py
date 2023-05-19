@@ -130,6 +130,31 @@ class Dataset:
             self.solv_macro_features].apply(self.load_precision)
         return macro_feature
 
+    def _scale_exp_set(self, exp_set, use_columns):
+        feat_to_scale = list(set(use_columns) & {'dens', 'mn', 'mw'})
+        exp_set.loc[:, feat_to_scale] = exp_set.loc[:, feat_to_scale]. \
+            div(exp_set['poly_mass'], axis=0)
+        feat_to_scale = list(set(use_columns) & {'mn', 'mw', 'dens',
+                                                 'pressure', 'wa'})
+        exp_set[feat_to_scale] = exp_set[feat_to_scale].apply(np.log10)
+        feat_to_scale = ['mw'] if self.use_only_mw else ['mn', 'mw']
+        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
+            sub(self.data_scale.mnw_shift).div(self.data_scale.mnw_scale)
+        exp_set['pressure'] = exp_set['pressure']. \
+            sub(self.data_scale.p_shift).div(self.data_scale.p_scale)
+        feat_to_scale = ['temperature',
+                         'tg'] if self.use_tg else ['temperature']
+        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
+            sub(self.data_scale.t_shift).div(self.data_scale.t_scale)
+        if self.use_dens:
+            exp_set['dens'] = exp_set['dens']. \
+                sub(self.data_scale.d_shift).div(self.data_scale.d_scale)
+        feat_to_scale = list(set(use_columns) & {'mn', 'mw', 'tg', 'dens',
+                                                 'pressure', 'temperature',
+                                                 'wa'})
+        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
+            apply(self.load_precision)
+
 
 class DatasetFit(Dataset):
     """Load, separate and prepare the data for training and analysis"""
@@ -151,8 +176,7 @@ class DatasetFit(Dataset):
         poly_conf_num, solv_conf_num = self._load_num_conf()
         # Prepare dataset tables
         self.index_table, \
-            self.exp_set = self._form_index_tables(self.data_scale,
-                                                   poly_conf_num,
+            self.exp_set = self._form_index_tables(poly_conf_num,
                                                    solv_conf_num)
         # Get sampling number for a single experiment
         self.exp_mapper = self._get_exp_sampling(self.exp_set)
@@ -169,9 +193,11 @@ class DatasetFit(Dataset):
             # actual training table will be sampled each epoch while
             # evaluation table is sampled here once per training run
             self.index_table_eval = self. \
-                index_table_sampling(self.index_table_eval)
-            self.index_table_train.reset_index(inplace=True, drop=True)
-            self.index_table_eval.reset_index(inplace=True, drop=True)
+                _index_table_sampling(self.index_table_eval)
+            self.index_table_train = self.index_table_train. \
+                reset_index(drop=True)
+            self.index_table_eval = self.index_table_eval. \
+                reset_index(drop=True)
             # remove parent index table after split if it isn't needed anymore
             if 'error_analysis' not in params.exec_mode:
                 del self.index_table
@@ -185,23 +211,24 @@ class DatasetFit(Dataset):
         except AttributeError:
             pass
         else:
-            self.index_table.drop(['polymer', 'solvent'], axis=1, inplace=True)
+            self.index_table = self.index_table. \
+                drop(['polymer', 'solvent'], axis=1)
         try:
             self.index_table_train
         except AttributeError:
             pass
         else:
-            self.index_table_train.drop(['polymer', 'solvent'], axis=1,
-                                        inplace=True)
+            self.index_table_train = self.index_table_train. \
+                drop(['polymer', 'solvent'], axis=1)
         try:
             self.index_table_eval
         except AttributeError:
             pass
         else:
-            self.index_table_eval.drop(['polymer', 'solvent'], axis=1,
-                                       inplace=True)
+            self.index_table_eval = self.index_table_eval. \
+                drop(['polymer', 'solvent'], axis=1)
 
-    def _load_experimental(self, scale):
+    def _load_experimental(self):
         """Load experimental data set to Pandas dataframe"""
         data_types = {i: np.float32 for i in self.poly_macro_features}
         data_types.update({'expno': np.uint16,
@@ -244,39 +271,10 @@ class DatasetFit(Dataset):
                          exp_set['solv_mass'] /
                          (1 - exp_set['wa']))
 
-        # TODO move feature scaling to the parent class
-        feat_to_scale = list(set(use_columns) & {'dens', 'mn', 'mw'})
-        exp_set.loc[:, feat_to_scale] = exp_set.loc[:, feat_to_scale]. \
-            div(exp_set['poly_mass'], axis=0)
-
-        feat_to_scale = list(set(use_columns) & {'mn', 'mw', 'dens',
-                                                 'pressure', 'wa'})
-        exp_set[feat_to_scale] = exp_set[feat_to_scale].apply(np.log10)
-
-        feat_to_scale = ['mw'] if self.use_only_mw else ['mn', 'mw']
-        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
-            sub(scale.mnw_shift).div(scale.mnw_scale)
-        exp_set['pressure'] = exp_set['pressure']. \
-            sub(scale.p_shift).div(scale.p_scale)
-
-        feat_to_scale = ['temperature',
-                         'tg'] if self.use_tg else ['temperature']
-        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
-            sub(scale.t_shift).div(scale.t_scale)
-
-        if self.use_dens:
-            exp_set['dens'] = exp_set['dens']. \
-                sub(scale.d_shift).div(scale.d_scale)
-
-        feat_to_scale = list(set(use_columns) & {'mn', 'mw', 'tg', 'dens',
-                                                 'pressure', 'temperature',
-                                                 'wa'})
-        exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
-            apply(self.load_precision)
-
+        self._scale_exp_set(exp_set, use_columns)
         if self.use_only_amorph:
             exp_set = exp_set.drop(exp_set[exp_set.cryst > 0.001].index)
-            exp_set.drop(['cryst'], axis=1, inplace=True)
+            exp_set = exp_set.drop(['cryst'], axis=1)
         exp_set = exp_set.drop(['poly_mass', 'solv_mass'], axis=1)
 
         return exp_set
@@ -338,7 +336,7 @@ class DatasetFit(Dataset):
                     self.solv_cube_set[
                         i.split('.')[0]] = self._load_cube_sparse(i)
 
-    def cube_from_df(self, df_sample, df_exp):
+    def _cube_from_df(self, df_sample, df_exp):
         """Form dictionary key to retrieve array with electron density"""
         poly = 'p_{}'.format('_'.join([
             str(int(df_exp.at['polymer'])),
@@ -372,14 +370,13 @@ class DatasetFit(Dataset):
                     self._load_cube_dense(f'{solv}.npy'))
 
     def _form_index_tables(self,
-                           data_scale,
                            poly_conf_num,
                            solv_conf_num):
         """Combinations of experiment/polymers oligomer/conformer/augment"""
         # Form possible combinations of compounds/conformers/cuts/augmentations
         poly_set, solv_set = self._conf_comb(poly_conf_num, solv_conf_num)
         # Load and scale experimental data from experimental_dataset.csv
-        exp_set = self._load_experimental(data_scale)
+        exp_set = self._load_experimental()
         return (
             exp_set[['expno', 'polymer', 'solvent']].
             drop_duplicates(subset=['expno']).
@@ -488,7 +485,7 @@ class DatasetFit(Dataset):
                 merge(pairs_fold, how='inner', on=['polymer', 'solvent'])
                 for pairs_fold in pairs_folds]
 
-    def index_table_sampling(self, index_table):
+    def _index_table_sampling(self, index_table):
         """Sample rows: equal number for each polymer-solvent pair"""
         return index_table.groupby('expno'). \
             apply(lambda x: x.sample(n=self.exp_mapper.get(x.name),
@@ -496,32 +493,32 @@ class DatasetFit(Dataset):
             reset_index(drop=True). \
             sample(frac=1)
 
-    def index_table_chooser(self,
-                            is_evaluation=False,
-                            is_analysis=False,
-                            fold_no=None):
+    def _index_table_chooser(self,
+                             is_evaluation=False,
+                             is_analysis=False,
+                             fold_no=None):
         """Choose appropriate index table and sample for training/evaluation"""
         if is_analysis:
             return self.index_table
         if is_evaluation:
             if self.fold:
                 sample_table = self. \
-                    index_table_sampling(self.index_table_folds[fold_no])
+                    _index_table_sampling(self.index_table_folds[fold_no])
             elif self.eval_split or self.eval_define:
                 return self.index_table_eval
             else:
                 raise RuntimeError('Generator error: fold/split not defined')
         elif self.fold:
             sample_table = self. \
-                index_table_sampling(
+                _index_table_sampling(
                     pd.concat([df for i, df
                                in enumerate(self.index_table_folds)
                                if i != fold_no])
                                     )
         elif self.eval_split or self.eval_define:
-            sample_table = self.index_table_sampling(self.index_table_train)
+            sample_table = self._index_table_sampling(self.index_table_train)
         else:
-            sample_table = self.index_table_sampling(self.index_table)
+            sample_table = self._index_table_sampling(self.index_table)
         return sample_table
 
     def set_generator(self,
@@ -530,9 +527,9 @@ class DatasetFit(Dataset):
                       with_zeros=False,
                       fold_no=None):
         """Combine experiment with related solvent/polymer electron density"""
-        sample_table = self.index_table_chooser(is_evaluation,
-                                                is_analysis,
-                                                fold_no)
+        sample_table = self._index_table_chooser(is_evaluation,
+                                                 is_analysis,
+                                                 fold_no)
         sample_size = len(sample_table)
 
         if is_analysis:
@@ -556,7 +553,7 @@ class DatasetFit(Dataset):
                        np.array(exp_slice.loc[self.features])), \
                     np.array(exp_slice.at['wa']).reshape((1,))
             else:
-                yield (*self.cube_from_df(table_slice, exp_slice),
+                yield (*self._cube_from_df(table_slice, exp_slice),
                        np.array(exp_slice.loc[self.features])), \
                     np.array(exp_slice.at['wa']).reshape((1,))
 
@@ -598,24 +595,51 @@ class DatasetPred(Dataset):
         self.to_pred_csv = params.to_pred_csv
 
     def _index_table(self):
-        data_types = {'polymer': np.uint8,
-                      'solvent': np.uint8,
-                      'mn': np.float32,
-                      'mw': np.float32,
-                      'cryst': self.load_precision,
-                      'tg': np.float32,
-                      'dens': np.float32,
-                      'pmin': np.float32,
-                      'pmax': np.float32,
-                      'npstep': np.uint8,
-                      'tmin': np.float32,
-                      'tmax': np.float32,
-                      'ntstep': np.uint8}
+        data_types = {i: np.float32 for i in self.poly_macro_features}
+        data_types.update({'polymer': np.uint8,
+                           'solvent': np.uint8,
+                           'pmin': np.float32,
+                           'pmax': np.float32,
+                           'npstep': np.uint8,
+                           'tmin': np.float32,
+                           'tmax': np.float32,
+                           'ntstep': np.uint8,
+                           'cryst': self.load_precision})
+        use_columns = ['polymer', 'solvent', 'pmin', 'pmax', 'npstep',
+                       'tmin', 'tmax', 'ntstep',
+                       'cryst'] + self.poly_macro_features
         ranges = pd.read_csv(os.path.join(self._data_dir, self.to_pred_csv),
-                             dtype=data_types)
-        # TODO complete it
+                             dtype=data_types, usecols=use_columns)
+        ranges_len = len(ranges)
+        range_num, pressure, temperature = [], [], []
+        for s in range(0, ranges_len):
+            range_slice = ranges.iloc[s]
+            examples_num = range_slice.at['npstep'] * range_slice.at['ntstep']
+            range_num += [s for i in range(examples_num)]
+            ref_temperature = list(np.linspace(range_slice.at['tmin'],
+                                               range_slice.at['tmax'],
+                                               range_slice.at['ntstep']))
+            ref_pressure = list(np.linspace(range_slice.at['pmin'],
+                                            range_slice.at['pmax'],
+                                            range_slice.at['npstep']))
+            for t in ref_temperature:
+                pressure += ref_pressure
+                temperature += [t for i in range(len(ref_pressure))]
+        index_table = pd.DataFrame({'range': range_num,
+                                    'temperature': temperature,
+                                    'pressure': pressure})
+        ranges = ranges.reset_index().rename(columns={'index': 'range'})
+        index_table = index_table.merge(ranges, on='range')
+        index_table = index_table. \
+            merge(self.poly_mass[['polymer', 'poly_mass']],
+                  on='polymer'). \
+            merge(self.solv_mass[['solvent', 'solv_mass']],
+                  on='solvent')
+        self._scale_exp_set(index_table, use_columns)
 
-    def cube_from_df(self, df_sample):
+        return index_table
+
+    def _cube_from_df(self, df_sample):
         poly = int(df_sample.at['polymer'])
         solv = int(df_sample.at['solvent'])
         return (
@@ -636,7 +660,7 @@ class DatasetPred(Dataset):
 
         for s in range(0, sample_size):
             table_slice = sample_table.iloc[s]
-            yield (*self.cube_from_df(table_slice),
+            yield (*self._cube_from_df(table_slice),
                    np.array(table_slice.loc[self.features]))
 
     def data_gen(self):

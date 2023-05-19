@@ -24,11 +24,15 @@ not yet implemented, but will be available soon !!!_**
    * [Parameters](#parameters)
    * [Command-line options](#command-line-options)
 - [Dataset structure](#dataset-structure)
+   * [Dataset overview](#dataset-overview)
+   * [Dataset for inference](#dataset-for-inference)
+   * [Dataset for training](#dataset-for-training)
 - [Electron density generation](#electron-density-generation)
      * [qcdata_gen overview](#qcdata_gen-overview)
      * [qcdata_gen requirements](#qcdata_gen-requirements)
      * [qcdata_gen setup](#qcdata_gen-setup)
-     * [qcdata_gen run](#qcdata_gen-run)
+     * [qcdata_gen run for inference data](#qcdata_gen-run-for-inference-data)
+     * [qcdata_gen run for training data](#qcdata_gen-run-for-training-data)
 - [TODO](#todo)
 - [Notes](#notes)
      * [Excluded data sources](#excluded_data_sources)
@@ -585,42 +589,54 @@ optional arguments:
 ## Dataset structure
 
 
-![RhNet_xyexample](images/xyexample.png)
-
 _Section is under construction, for the time being please refer to the research 
 paper_
+
+
+### Dataset overview
+![RhNet_xyexample](images/xyexample.png)
+
+
+### Dataset for inference
+
+
+### Dataset for training
+
 
 ## Electron density generation
 
 
-Repository contains a script to generate a set of conformers of a molecule
-using RDKit and optimize them using ORCA.
+Repository contains a script to generate and augment 3D images of electron 
+density distribution in a format suitable for the RhNet model.
 
 _Section is under construction_
 
 ### qcdata_gen overview
- 
-The general workflow is pretty straightforward:
 
-- Generate a set of conformers of a molecule using RDKit
-- Remove duplicated conformers geometries using an external script
-- Optimize conformers geometries with some semiempirical method using ORCA
-- Remove the conformers outside a predefined energy window
-- Remove duplicated conformers geometries using an external script
-- Optimize conformers geometries with some DFT method using ORCA
-- Remove the conformers outside a predefined energy window
-- Remove duplicated conformers geometries using an external script
+ 
+The qcdata_gen script is intended to perform two main tasks:
+
+- generate quantum-chemical data for training
+- generate quantum-chemical data for inference
+
+The workflows in these cases differ. For a general description of training 
+data generation refer to the paper from [Reference](#reference) section 
+
 
 ### qcdata_gen requirements
  
 To run the script one will need:
 - [ORCA](https://orcaforum.kofo.mpg.de/index.php) - An ab initio, DFT and 
 semiempirical SCF-MO package
-- [RDKit](https://www.rdkit.org/) - Open-Source Cheminformatics Software
-- [XTB](https://xtb-docs.readthedocs.io/en/latest/contents.html) - 
+- [RDKit](https://www.rdkit.org/)* - Open-Source Cheminformatics Software
+- [XTB](https://xtb-docs.readthedocs.io/en/latest/contents.html)* - 
 Semiempirical Extended Tight-Binding Program Package
-- [conformers](http://limor1.nioch.nsc.ru/quant/program/conformers/) - a 
+- [conformers](http://limor1.nioch.nsc.ru/quant/program/conformers/)* - a 
 standalone script for identical structures filtering
+
+   **Notes:**
+   * RDKit, XTB, and conformers are only needed for training dataset generation 
+
  
 ### qcdata_gen setup
 
@@ -630,8 +646,11 @@ standalone script for identical structures filtering
    ```
    this item is under construction
    ```
-  
-### qcdata_gen run
+
+### qcdata_gen run for inference data
+
+
+### qcdata_gen run for training data
 
 The script can consume multiple .mol files from the input directory. 
  
@@ -704,6 +723,7 @@ optional arguments:
 ### Maintenance
 - test automation
 - compactize model definition code
+- refactor stuff triggering SettingWithCopyWarning
 ### Further development
 - on-the-fly translational and rotational augmentation
 ### Misc minor stuff
