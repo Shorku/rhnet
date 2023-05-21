@@ -13,7 +13,7 @@ from model.rhnet import model_choice
 from runtime.run import train, evaluate, error_analysis
 from runtime.setup import get_logger, set_flags, prepare_model_dir
 from runtime.arguments import PARSER, parse_args
-from data_loading.data_loader import DatasetFit
+from data_loading.data_loader import DatasetFit, DatasetPred
 
 
 def main():
@@ -32,7 +32,10 @@ def main():
     else:
         model = model_choice(params)
 
-    dataset = DatasetFit(params)
+    if 'predict' in params.exec_mode:
+        dataset = DatasetPred(params)
+    else:
+        dataset = DatasetFit(params)
 
     if 'train' in params.exec_mode:
         # Training with n-fold validation

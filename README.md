@@ -87,14 +87,14 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
  
 ### Setup
  
-1. Clone the repository.
+1. Clone the repository
 
    ```bash
    git clone https://github.com/Shorku/rhnet
    cd rhnet
    ```
  
-2. Build the NGC container with additional layers.
+2. Build the NGC container with additional layers
      
    ```
    docker build -t rhnet .
@@ -111,7 +111,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    image, otherwise it will be also copied.*
    
    
-3. Start the NGC container in the interactive mode.
+3. Start the NGC container in the interactive mode
   
    ```bash
    mkdir data
@@ -131,29 +131,38 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    amount. Make sure to adjust this parameter.*
 
      
-4. Download or generate the data.
+4. Download or generate the data
    
    `rhnet/data` folder contains experimental data and other necessary
-   tables for the RhNet to perform training. The only exception are the 
-   electron densities, which can be downloaded elsewhere.
+   tables for the RhNet to perform training and inference. The only exception
+   are the electron densities, which can be downloaded elsewhere.
 
-   The script expects the dataset folder to contain the following files:
+   To perform **both training and inference** the script expects the dataset
+   folder to contain the following files:
 
-   `experimental_dataset.csv`
+   `polymer_mass.csv` (suitable for training and prediction)
 
-   `polymers.txt`
-
-   `solvents.txt`
-
-   `polymer_mass.csv`
-
-   `solvent_mass.csv`
-
-   optional:
-
-   `solvent_macro_features.csv`
+   `solvent_mass.csv` (suitable for training and prediction)
 
    and `cubes` folder with the electron density images
+
+   optionally if the model is intended to use solvent macroparameters:
+
+   `solvent_macro_features.csv` (suitable for training and prediction)
+
+   To perform **inference** the script also expects the dataset folder 
+   to contain the following file:
+
+   `to_predict_ranges.csv` (example suitable for inference)
+
+   To perform **training** the script also expects the dataset folder 
+   to contain the following files:
+
+   `experimental_dataset.csv` (suitable for training)
+
+   `polymers.txt` (suitable for training)
+
+   `solvents.txt` (suitable for training)
 
    For an in-depth description of the dataset structure refer to 
    [Dataset structure](#dataset-structure) section.
@@ -163,8 +172,12 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 
    
 ### Run
+
+1. Inference
+
+   **Coming soon**
  
-5. Training.
+2. Training
    
    **Actual model**
    ```bash
@@ -221,7 +234,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    later. 
 
  
-6. Training with validation.
+3. Training with validation.
   
    The model can be evaluated while training by passing the `--eval_split` 
    flag:
@@ -243,7 +256,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    option, see [General parameters](#general-parameters) section for details.
    
  
-7. Training with cross-validation.
+4. Training with cross-validation.
   
    To perform n-fold cross-validation a `--fold` flag should be passed:
      
@@ -332,8 +345,8 @@ expno,polymer,solvent,mn,mw,cryst,tg,dens,pressure,temperature,wa,doi,notes
     ranges. The `.csv` file should look like (DEFAULT: `to_predict_ranges.csv`):
 ```bash
 polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
-1,1,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308,15,3
-1,10,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308,15,3
+1,1,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308.15,3
+1,10,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308.15,3
 ...
 ```
 * `--api`: Whether to use Keras builtin or custom training/evaluating loop:

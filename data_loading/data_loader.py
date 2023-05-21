@@ -131,6 +131,7 @@ class Dataset:
         return macro_feature
 
     def _scale_exp_set(self, exp_set, use_columns):
+        # TODO fix solvent macro features scaling
         feat_to_scale = list(set(use_columns) & {'dens', 'mn', 'mw'})
         exp_set.loc[:, feat_to_scale] = exp_set.loc[:, feat_to_scale]. \
             div(exp_set['poly_mass'], axis=0)
@@ -593,6 +594,7 @@ class DatasetPred(Dataset):
         # Initialize general parameters
         super().__init__(params)
         self.to_pred_csv = params.to_pred_csv
+        self.index_table = self._index_table()
 
     def _index_table(self):
         data_types = {i: np.float32 for i in self.poly_macro_features}
@@ -614,14 +616,15 @@ class DatasetPred(Dataset):
         range_num, pressure, temperature = [], [], []
         for s in range(0, ranges_len):
             range_slice = ranges.iloc[s]
-            examples_num = range_slice.at['npstep'] * range_slice.at['ntstep']
+            examples_num = int(range_slice.at['npstep'] *
+                               range_slice.at['ntstep'])
             range_num += [s for i in range(examples_num)]
-            ref_temperature = list(np.linspace(range_slice.at['tmin'],
-                                               range_slice.at['tmax'],
-                                               range_slice.at['ntstep']))
-            ref_pressure = list(np.linspace(range_slice.at['pmin'],
-                                            range_slice.at['pmax'],
-                                            range_slice.at['npstep']))
+            ref_temperature = list(np.linspace(int(range_slice.at['tmin']),
+                                               int(range_slice.at['tmax']),
+                                               int(range_slice.at['ntstep'])))
+            ref_pressure = list(np.linspace(int(range_slice.at['pmin']),
+                                            int(range_slice.at['pmax']),
+                                            int(range_slice.at['npstep'])))
             for t in ref_temperature:
                 pressure += ref_pressure
                 temperature += [t for i in range(len(ref_pressure))]
@@ -629,13 +632,20 @@ class DatasetPred(Dataset):
                                     'temperature': temperature,
                                     'pressure': pressure})
         ranges = ranges.reset_index().rename(columns={'index': 'range'})
+        ranges = ranges. \
+            drop(['pmin', 'pmax', 'npstep', 'tmin', 'tmax', 'ntstep'],
+                 axis=1)
+        if self.use_only_amorph:
+            ranges = ranges.drop(['cryst'], axis=1)
         index_table = index_table.merge(ranges, on='range')
         index_table = index_table. \
-            merge(self.poly_mass[['polymer', 'poly_mass']],
+            merge(self.poly_mass[['polymer', 'poly_mass']].
+                  drop_duplicates(subset=['polymer', 'poly_mass']),
                   on='polymer'). \
             merge(self.solv_mass[['solvent', 'solv_mass']],
                   on='solvent')
-        self._scale_exp_set(index_table, use_columns)
+        self._scale_exp_set(index_table, use_columns + ['pressure',
+                                                        'temperature'])
 
         return index_table
 
@@ -644,22 +654,21 @@ class DatasetPred(Dataset):
         solv = int(df_sample.at['solvent'])
         return (
             self.poly_cube_set.setdefault(poly, self._load_cube_sparse(
-                f'{poly}.npy')).todense(),
+                f'p_{poly}.npy')).todense(),
             self.solv_cube_set.setdefault(solv, self._load_cube_sparse(
-                f'{solv}.npy')).todense()
+                f's_{solv}.npy')).todense()
                 )
 
     def set_generator(self):
         """Combine defined macroscopic parameters with related solvent/polymer
         electron density"""
-        sample_table = self._index_table()
-        sample_size = len(sample_table)
+        sample_size = len(self.index_table)
         log_name = f'full_table_{self.log_name}.csv'
         log_path = os.path.join(self.log_dir, log_name)
-        sample_table.to_csv(log_path, index=False)
+        self.index_table.to_csv(log_path, index=False)
 
         for s in range(0, sample_size):
-            table_slice = sample_table.iloc[s]
+            table_slice = self.index_table.iloc[s]
             yield (*self._cube_from_df(table_slice),
                    np.array(table_slice.loc[self.features]))
 
