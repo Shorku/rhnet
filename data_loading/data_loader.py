@@ -644,6 +644,9 @@ class DatasetPred(Dataset):
                   on='polymer'). \
             merge(self.solv_mass[['solvent', 'solv_mass']],
                   on='solvent')
+        log_name = f'predict_index_table_{self.log_name}.csv'
+        log_path = os.path.join(self.log_dir, log_name)
+        index_table.to_csv(log_path, index=False)
         self._scale_exp_set(index_table, use_columns + ['pressure',
                                                         'temperature'])
 
@@ -662,11 +665,8 @@ class DatasetPred(Dataset):
     def set_generator(self):
         """Combine defined macroscopic parameters with related solvent/polymer
         electron density"""
-        sample_size = len(self.index_table)
-        log_name = f'full_table_{self.log_name}.csv'
-        log_path = os.path.join(self.log_dir, log_name)
-        self.index_table.to_csv(log_path, index=False)
 
+        sample_size = len(self.index_table)
         for s in range(0, sample_size):
             table_slice = self.index_table.iloc[s]
             yield (*self._cube_from_df(table_slice),
