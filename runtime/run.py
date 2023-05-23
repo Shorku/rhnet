@@ -74,6 +74,7 @@ def evaluate(params, model, dataset, logger, epoch, fold_no):
             params.exec_mode != 'evaluate'):
         print("No split specified for evaluation. Use --fold or --eval_split.")
 
+    # TODO fix weights loading - it is broken
     if params.exec_mode == 'evaluate' \
             and params.resume_training\
             and (not params.load_model):
@@ -105,6 +106,7 @@ def error_analysis(params, model, dataset):
         None
 
     """
+    # TODO fix weights loading - it is broken
     if params.exec_mode == 'error_analysis' \
             and params.resume_training\
             and (not params.load_model):
@@ -131,20 +133,20 @@ def predict(params, model, dataset):
         None
 
     """
-    if params.resume_training and (not params.load_model):
-        checkpoint = tf.train.Checkpoint(model=model)
-        checkpoint.restore(tf.train.latest_checkpoint(params.model_dir)).\
-            expect_partial()
+    if (not params.load_model) and params.resume_training:
+        model.load_weights(os.path.join(params.model_dir, "checkpoint"))
     if params.api == 'builtin':
         prediction = predict_builtin(model, dataset)
     elif params.api == 'custom':
         # prediction = predict_custom(params, model, dataset)
         print('Sorry, custom predicting loop is not implemented')
         return 1
+    prediction = pd.concat([dataset.index_table,
+                            pd.DataFrame(prediction, columns=['prediction'])],
+                           axis=1)
     log_path = os.path.join(params.log_dir,
                             f'prediction_{params.log_name}.csv')
-    pd.DataFrame(prediction,
-                 columns=['prediction']).to_csv(log_path, index=False)
+    prediction.to_csv(log_path, index=False)
 
 
 def train_builtin(params, model, dataset, optimizer, fold_no):

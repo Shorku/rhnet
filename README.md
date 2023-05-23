@@ -326,10 +326,11 @@ Following is a list of the available parameters for the `main.py` script:
   * `train`: (DEFAULT) trains model.
   * `evaluate`: performs evaluation on the validation subset.
   * `predict`: loads checkpoint and runs inference (***is not implemented***).
+    Predictions will be saved to {--log_dir}/prediction_{--log_name}.csv.
   * `error_analysis`: performs evaluation on the whole dataset and save the 
     whole augmented dataset (without images but their indexes) to 
     full_table_{--log_name}.csv and predicted values to 
-    detailed_pred_{params.log_name}.csv for subsequent analysis
+    detailed_pred_{--log_name}.csv for subsequent analysis
 * `--model_dir`: The directory to save checkpoints and the trained model. 
 DEFAULT: `./results`. 
 * `--data_dir`: The directory containing the dataset. Required parameter.
