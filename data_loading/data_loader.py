@@ -669,16 +669,16 @@ class DatasetPred(Dataset):
         sample_size = len(self.index_table)
         for s in range(0, sample_size):
             table_slice = self.index_table.iloc[s]
-            yield (*self._cube_from_df(table_slice),
-                   np.array(table_slice.loc[self.features]))
+            yield ((*self._cube_from_df(table_slice),
+                   np.array(table_slice.loc[self.features])),)
 
     def data_gen(self):
         """Input function for inference"""
         dataset = tf.data.Dataset.from_generator(self.set_generator,
                                                  output_signature=(
-                                                     self.cube_dim,
-                                                     self.cube_dim,
-                                                     self.macr_dim))
+                                                   (self.cube_dim,
+                                                    self.cube_dim,
+                                                    self.macr_dim),))
         dataset = dataset.batch(self._batch_size, drop_remainder=False)
         dataset = dataset.prefetch(self._batch_size)
         return dataset

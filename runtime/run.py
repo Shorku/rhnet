@@ -117,6 +117,36 @@ def error_analysis(params, model, dataset):
         error_analysis_custom(params, model, dataset)
 
 
+def predict(params, model, dataset):
+    """Wrapper for RhNet predicting loop run the chosen (builtin of custom)
+    predicting loop and output the predicted values to a .csv file
+
+    Args:
+        params (munch.Munch): Command line parameters
+        model (tf.keras.Model): RhNet instance
+        dataset (tensorflow.data.Dataset): dataset with
+            output_signature=(cube_dim, cube_dim, exp_param_dim)
+
+    Return:
+        None
+
+    """
+    if params.resume_training and (not params.load_model):
+        checkpoint = tf.train.Checkpoint(model=model)
+        checkpoint.restore(tf.train.latest_checkpoint(params.model_dir)).\
+            expect_partial()
+    if params.api == 'builtin':
+        prediction = predict_builtin(model, dataset)
+    elif params.api == 'custom':
+        # prediction = predict_custom(params, model, dataset)
+        print('Sorry, custom predicting loop is not implemented')
+        return 1
+    log_path = os.path.join(params.log_dir,
+                            f'prediction_{params.log_name}.csv')
+    pd.DataFrame(prediction,
+                 columns=['prediction']).to_csv(log_path, index=False)
+
+
 def train_builtin(params, model, dataset, optimizer, fold_no):
     """Functional API training loop with optional evaluation
 
@@ -378,3 +408,20 @@ def error_analysis_custom(params, model, dataset):
         log_path = os.path.join(params.log_dir,
                                 f'detailed_pred_zeros_{params.log_name}.csv')
         pd.DataFrame(y, columns=['y_hat', 'y']).to_csv(log_path, index=False)
+
+
+def predict_builtin(model, dataset):
+    """Functional API prediction loop
+
+    Args:
+        model (tf.keras.Model): RhNet instance
+        dataset (tensorflow.data.Dataset): training or evaluation dataset with
+            output_signature=(cube_dim, cube_dim, exp_param_dim)
+
+    Return:
+        prediction (numpy.ndarray): array of predictions
+
+    """
+    prediction = model.predict(x=dataset.data_gen())
+
+    return prediction

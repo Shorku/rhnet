@@ -10,7 +10,7 @@ import os
 import tensorflow as tf
 
 from model.rhnet import model_choice
-from runtime.run import train, evaluate, error_analysis
+from runtime.run import train, evaluate, error_analysis, predict
 from runtime.setup import get_logger, set_flags, prepare_model_dir
 from runtime.arguments import PARSER, parse_args
 from data_loading.data_loader import DatasetFit, DatasetPred
@@ -24,8 +24,10 @@ def main():
     set_flags(params)
     model_dir = prepare_model_dir(params)
     params.model_dir = model_dir
-    logger = get_logger(params)
+    if params.exec_mode != 'predict':
+        logger = get_logger(params)
 
+    # TODO workaround for GPU-trained models used for inference on CPU
     if params.load_model:
         model = tf.keras.models.load_model(
             os.path.join(params.model_dir, 'saved_model'))
@@ -52,7 +54,7 @@ def main():
         evaluate(params, model, dataset, logger, 0, None)
 
     if 'predict' in params.exec_mode:
-        pass  # predict(params, model, dataset, logger)
+        predict(params, model, dataset)
 
     if 'error_analysis' in params.exec_mode:
         # similar to evaluate, but loops over the whole dataset and logs
