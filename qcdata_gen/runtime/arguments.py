@@ -5,7 +5,8 @@ from munch import Munch
 PARSER = argparse.ArgumentParser(description="ConfGen")
 
 PARSER.add_argument('--exec_mode',
-                    choices=['conf', 'cube', 'conf_and_cube'],
+                    choices=['conf', 'cube', 'conf_and_cube',
+                             'cube_to_predict'],
                     type=str,
                     default='conf_and_cube',
                     help="""Generate conformers and/or cubes""")

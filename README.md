@@ -730,19 +730,20 @@ optional arguments:
 ### General
 - complete documentation
 ### Inference
-- inference untility
-- XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
-- prune and upload fitted models
-- utility for nice inference reports (Matplotlib + LaTeX?)
+- [x] inference untility
+- [ ] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
+- [ ] prune and upload fitted models
+- [ ] utility for nice inference reports (Matplotlib + LaTeX?)
+- [ ] option for a lighter (RI-PBE/def2-SVP?) electron density calculation
 ### Maintenance
-- test automation
-- compactize model definition code
-- refactor stuff triggering SettingWithCopyWarning
+- [ ] test automation
+- [ ] compactize model definition code
+- [ ] refactor stuff triggering SettingWithCopyWarning
 ### Further development
-- on-the-fly translational and rotational augmentation
+- [ ] on-the-fly translational and rotational augmentation
 ### Misc minor stuff
-- unify feature selection
-- add ORCA docker
+- [ ] unify feature selection
+- [ ] add ORCA docker
 
 
 ## Notes

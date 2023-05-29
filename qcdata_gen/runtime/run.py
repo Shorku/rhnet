@@ -52,7 +52,7 @@ def generate_conf(params):
     return output_dir
 
 
-def generate_cube(params, input_dir):
+def generate_cube(params):
     """ Read molecular geometries from .xyz files in input_dir directory,
     cut the shielding groups (Me- for example) if polymer, calculate, generate
     and rescale electron densities.
@@ -66,12 +66,14 @@ def generate_cube(params, input_dir):
 
     """
     # First stage: cut screening groups if necessary, remove duplicates
-    output_dir = os.path.join(params.out_dir, 'cut_geom')
-    cut_geometries(input_dir, output_dir, params)
-    remove_duplicates(output_dir)
-    dump_temp_files(input_dir, '.xyz')
+    input_dir = params.mol_dir
+    if 'predict' not in params.exec_mode:
+        output_dir = os.path.join(params.out_dir, 'cut_geom')
+        cut_geometries(input_dir, output_dir, params)
+        remove_duplicates(output_dir)
+        dump_temp_files(input_dir, '.xyz')
+        input_dir = output_dir
     # Second stage: perform qc calc. and generate .cube files with densities
-    input_dir = output_dir
     output_dir = os.path.join(params.out_dir, 'cubes')
     generate_qc_cube(input_dir, output_dir, params)
     dump_temp_files(input_dir, '.xyz')
