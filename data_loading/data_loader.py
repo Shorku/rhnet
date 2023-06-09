@@ -644,9 +644,9 @@ class DatasetPred(Dataset):
                   on='polymer'). \
             merge(self.solv_mass[['solvent', 'solv_mass']],
                   on='solvent')
-        log_name = f'predict_index_table_{self.log_name}.csv'
-        log_path = os.path.join(self.log_dir, log_name)
-        index_table.to_csv(log_path, index=False)
+        # log_name = f'predict_index_table_{self.log_name}.csv'
+        # log_path = os.path.join(self.log_dir, log_name)
+        # index_table.to_csv(log_path, index=False)
         self._scale_exp_set(index_table, use_columns + ['pressure',
                                                         'temperature'])
 

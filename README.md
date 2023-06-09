@@ -730,7 +730,7 @@ optional arguments:
 ### General
 - complete documentation
 ### Inference
-- [x] inference untility
+- [x] inference utility
 - [ ] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
 - [ ] prune and upload fitted models
 - [ ] utility for nice inference reports (Matplotlib + LaTeX?)

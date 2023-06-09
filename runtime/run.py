@@ -134,7 +134,8 @@ def predict(params, model, dataset):
 
     """
     if (not params.load_model) and params.resume_training:
-        model.load_weights(os.path.join(params.model_dir, "checkpoint"))
+        model.load_weights(os.path.join(params.model_dir, "checkpoint")). \
+            expect_partial()
     if params.api == 'builtin':
         prediction = predict_builtin(model, dataset)
     elif params.api == 'custom':
