@@ -617,6 +617,29 @@ paper_
 ### Dataset for training
 
 
+Geometries of solvents and polymers' repeating units used to calculate 
+electron densities are provided in `XYZ` format within the repository in 
+`data/geometries.tar.xz`. 
+Filenames in the archive follow a certain convention:
+* Filenames contain four indexes separated by `_`
+* The first index is a letter: either `p`(olymer) or `s`(olvent)
+* Second index is an ID number of polymer specified in `data/list_of_polymers.csv`
+* Third index if for the choice of a particular repeating unit of a polymer
+and is always 1 for solvents.
+* Fourth index enumerates conformational isomers 
+
+For example `p_3_2_1.xyz` will contain geometry of:
+* polymer, as it starts with `p`
+* polyethylene (-CH<sub>2</sub>CH<sub>2</sub>-)<sub>n</sub> which is defined by
+index `3`
+* -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
+defined by index `2`
+* conformational isomer of the 
+-CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
+number `1`
+
+
+
 ## Electron density generation
 
 
