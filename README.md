@@ -25,7 +25,7 @@ not yet implemented, but will be available soon !!!_**
    * [Command-line options](#command-line-options)
 - [Dataset structure](#dataset-structure)
    * [Dataset overview](#dataset-overview)
-   * [Training example assembly](#training_example_assembly)
+   * [Training example assembly](#training-example-assembly)
    * [Dataset for inference](#dataset-for-inference)
    * [Dataset for training](#dataset-for-training)
 - [Electron density generation](#electron-density-generation)
@@ -36,8 +36,8 @@ not yet implemented, but will be available soon !!!_**
      * [qcdata_gen run for training data](#qcdata_gen-run-for-training-data)
 - [TODO](#todo)
 - [Notes](#notes)
-     * [Excluded data sources](#excluded_data_sources)
-     * [Other notes](#other_notes)
+     * [Excluded data sources](#excluded-data-sources)
+     * [Other notes](#other-notes)
 
 ## Overview
 
@@ -661,9 +661,10 @@ number `1`
 
 `data/test_pairs.csv`
 
-
 ### Training example assembly
+
 ![RhNet_xyexample](images/xyexample.png)
+
 
 ### Dataset for inference
 
