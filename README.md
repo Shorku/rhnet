@@ -25,6 +25,7 @@ not yet implemented, but will be available soon !!!_**
    * [Command-line options](#command-line-options)
 - [Dataset structure](#dataset-structure)
    * [Dataset overview](#dataset-overview)
+   * [Training example assembly](#training_example_assembly)
    * [Dataset for inference](#dataset-for-inference)
    * [Dataset for training](#dataset-for-training)
 - [Electron density generation](#electron-density-generation)
@@ -602,28 +603,29 @@ optional arguments:
 
 ## Dataset structure
 
-
-_Section is under construction, for the time being please refer to the research 
-paper_
-
-
 ### Dataset overview
-![RhNet_xyexample](images/xyexample.png)
+The `data/` folder contains the current version of the dataset. It includes
+following files:
 
 
-### Dataset for inference
+`data/experimental_dataset.csv`
 
 
-### Dataset for training
+`data/list_of_polymers.csv` matches the names of polymers and their ID numbers
+in the dataset
 
 
-Geometries of solvents and polymers' repeating units used to calculate 
-electron densities are provided in `XYZ` format within the repository in 
-`data/geometries.tar.xz`. 
-Filenames in the archive follow a certain convention:
+`data/list_of_solvents.csv` matches the names of solvents and their ID numbers
+in the dataset
+
+
+`data/geometries.tar.xz` archive provides **geometries of solvents and 
+polymers'** repeating units (in `XYZ` format) which were used to calculate 
+electron densities. Filenames in the archive follow a certain convention:
 * Filenames contain four indexes separated by `_`
 * The first index is a letter: either `p`(olymer) or `s`(olvent)
-* Second index is an ID number of polymer specified in `data/list_of_polymers.csv`
+* Second index is an ID number of polymer specified in 
+`data/list_of_polymers.csv` or solvent specified in `data/list_of_solvents.csv`
 * Third index if for the choice of a particular repeating unit of a polymer
 and is always 1 for solvents.
 * Fourth index enumerates conformational isomers 
@@ -637,6 +639,39 @@ defined by index `2`
 * conformational isomer of the 
 -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
 number `1`
+
+
+`data/smiles.tar.xz`
+
+
+`data/polymers.txt`
+
+
+`data/polymer_mass.csv`
+
+
+`data/solvent_mass.csv`
+
+
+`data/solvent_macro_features.csv`
+
+
+`data/val_pairs.csv`
+
+
+`data/test_pairs.csv`
+
+
+### Training example assebly
+![RhNet_xyexample](images/xyexample.png)
+
+### Dataset for inference
+
+
+### Dataset for training
+
+
+
 
 
 
