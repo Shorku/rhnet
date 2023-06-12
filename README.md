@@ -662,7 +662,7 @@ number `1`
 `data/test_pairs.csv`
 
 
-### Training example assebly
+### Training example assembly
 ![RhNet_xyexample](images/xyexample.png)
 
 ### Dataset for inference
