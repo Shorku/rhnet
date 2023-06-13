@@ -621,7 +621,7 @@ in the dataset
 
 `data/geometries.tar.xz` archive provides **geometries of solvents and 
 polymers'** repeating units (in `XYZ` format) which were used to calculate 
-electron densities. Filenames in the archive follow a certain convention:
+electron densities. Filenames in the archive use the following convention:
 * Filenames contain four indexes separated by `_`
 * The first index is a letter: either `p`(olymer) or `s`(olvent)
 * Second index is an ID number of polymer specified in 
@@ -641,7 +641,15 @@ defined by index `2`
 number `1`
 
 
-`data/smiles.tar.xz`
+`data/smiles.tar.xz` archive contains polymers' repeating units and solvents
+in SMILES format. It is provided within the dataset to simplify its use in 
+fitting of models with other than electron density molecular representations. 
+Dangling bonds in polymers' repeating units are caped with Fr-atoms. Filenames 
+in the archive use the following convention:
+* Filenames contain two indexes separated by `_`
+* The first index is a letter: either `p`(olymer) or `s`(olvent)
+* Second index is an ID number of polymer specified in 
+`data/list_of_polymers.csv` or solvent specified in `data/list_of_solvents.csv`
 
 
 `data/polymers.txt`
@@ -787,7 +795,7 @@ optional arguments:
 
 ## TODO
 ### General
-- complete documentation
+- [ ] complete documentation
 ### Inference
 - [x] inference utility
 - [ ] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
@@ -800,9 +808,14 @@ optional arguments:
 - [ ] refactor stuff triggering SettingWithCopyWarning
 ### Further development
 - [ ] on-the-fly translational and rotational augmentation
+- [ ] sparse convolutions
 ### Misc minor stuff
 - [ ] unify feature selection
 - [ ] add ORCA docker
+- [ ] check smiles.tar.xz for non-minimal polymer repeating units
+- [ ] check smiles.tar.xz for presence of S-O bonds instead of S=O bonds
+- [ ] add to qcdata_gen script a check for a single-atom input geometry
+- [ ] merge solvents 31 and 63 - both are SO2
 
 
 ## Notes
