@@ -812,10 +812,10 @@ optional arguments:
 ### Misc minor stuff
 - [ ] unify feature selection
 - [ ] add ORCA docker
-- [ ] check smiles.tar.xz for non-minimal polymer repeating units
-- [ ] check smiles.tar.xz for presence of S-O bonds instead of S=O bonds
+- [x] check smiles.tar.xz for non-minimal polymer repeating units
+- [x] check smiles.tar.xz for presence of S-O bonds instead of S=O bonds
 - [ ] add to qcdata_gen script a check for a single-atom input geometry
-- [ ] merge solvents 31 and 63 - both are SO2
+- [x] merge solvents 31 and 63 - both are SO2
 
 
 ## Notes
