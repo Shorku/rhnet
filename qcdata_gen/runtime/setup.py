@@ -20,9 +20,9 @@ def set_env(params):
         raise EnvironmentError('ORCA executables path not specified. '
                                'Use --orca_path.')
 
-    if params.conf_path:
+    if 'predict' not in params.exec_mode and params.conf_path:
         os.environ['CONFORMERS'] = os.path.abspath(params.conf_path)
-    elif 'CONFORMERS' not in os.environ:
+    elif 'predict' not in params.exec_mode and 'CONFORMERS' not in os.environ:
         raise EnvironmentError('conformers script path not specified. '
                                'Use --conf_path.')
 
@@ -49,7 +49,7 @@ def prepare_dir(params):
         None
 
     """
-    if params.exec_mode == 'conf' or params.exec_mode == 'conf_and_cube':
+    if 'conf' in params.exec_mode:
         os.makedirs(os.path.join(params.out_dir, 'ff_geom'),
                     exist_ok=True)
         if params.conf_level == 'semi' or params.conf_level == 'dft':
@@ -61,6 +61,7 @@ def prepare_dir(params):
     if params.exec_mode == 'cube' or params.exec_mode == 'conf_and_cube':
         os.makedirs(os.path.join(params.out_dir, 'cut_geom'),
                     exist_ok=True)
+    if 'cube' in params.exec_mode:
         os.makedirs(os.path.join(params.out_dir, 'cubes'),
                     exist_ok=True)
         os.makedirs(os.path.join(params.out_dir, 'npy_data'),

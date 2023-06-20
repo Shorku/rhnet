@@ -76,9 +76,11 @@ def generate_cube(params):
     # Second stage: perform qc calc. and generate .cube files with densities
     output_dir = os.path.join(params.out_dir, 'cubes')
     generate_qc_cube(input_dir, output_dir, params)
-    dump_temp_files(input_dir, '.xyz')
+    if 'predict' not in params.exec_mode:
+        dump_temp_files(input_dir, '.xyz')
     # Third stage: interpolate and resize electron densities
     input_dir = output_dir
     output_dir = os.path.join(params.out_dir, 'npy_data')
     convert_qc_cubes(input_dir, output_dir, params)
-    dump_temp_files(input_dir, '.cube')
+    if 'predict' not in params.exec_mode:
+        dump_temp_files(input_dir, '.cube')
