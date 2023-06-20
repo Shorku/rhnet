@@ -96,6 +96,10 @@ def convert_qc_cubes(input_dir, output_dir, params):
             spdens, spdens_disp = convert_qc_cube(input_file, params)
             dens = np.concatenate((eldens[:, :, :, np.newaxis],
                                    spdens[:, :, :, np.newaxis]), axis=3)
+            if 'predict' in params.exec_mode:
+                output_file = os.path.join(output_dir, f'{job_name}.npy')
+                np.save(output_file, dens.astype(np.float32))
+                continue
             output_file = os.path.join(output_dir, f'{job_name}_1.npy')
             np.save(output_file, dens.astype(np.float32))
             max_disp = [max(i) for i in zip(eldens_disp, spdens_disp)]
