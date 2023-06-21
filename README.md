@@ -749,7 +749,7 @@ rotations will be applied to electron densities
 starting with: 's_' to be a solvent molecule and with 'p_' to be a polymer
 repeating unit with two dangling bonds
 
-   `<ncores>` number of CPU cores to use in geometry optimizations
+   `<ncores>` number of CPU cores to use in DFT calculations
 
    `<input_path>` a directory where the script will look for input `.xyz` files 
 
@@ -767,7 +767,7 @@ The script can consume multiple .mol files from the input directory.
    ```bash
    python3 qcdata_gen/main.py --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --conf_path <conf_path>
    ```
-   `<ncores>` number of CPU cores to use in geometry optimizations
+   `<ncores>` number of CPU cores to use in DFT calculations
 
    `<input_path>` a directory where the script will look for input .mol files 
 
