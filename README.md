@@ -730,6 +730,28 @@ standalone script for identical structures filtering
 
 ### qcdata_gen run for inference data
 
+The script can consume multiple `.xyz` files from the input directory, perform 
+single-point DFT calculations and convert resulting electron and spin-densities
+to `.npy` format suitable for the ML-model. 
+ 
+   ```bash
+   python3 qcdata_gen/main.py --exec_mode cube_to_predict --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --use_name_convention
+   ```
+   `--exec_mode cube_to_predict` will instruct the script to perform only a
+single-point calculation on the user-supplied geometry
+
+   `--use_name_convention` suggest structure with xyz-filename starting with: 
+'s_' to be a solvent molecule and with 'p_' to be a polymer repeating unit with
+two dangling bonds
+
+   `<ncores>` number of CPU cores to use in geometry optimizations
+
+   `<input_path>` a directory where the script will look for input `.xyz` files 
+
+   `<output_path>` a directory where temporary files and the results will be
+stored
+
+
 
 ### qcdata_gen run for training data
 
@@ -738,7 +760,7 @@ The script can consume multiple .mol files from the input directory.
    **Basic:**
    
    ```bash
-   python3 main.py --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --conf_path <conf_path>
+   python3 qcdata_gen/main.py --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --conf_path <conf_path>
    ```
    `<ncores>` number of CPU cores to use in geometry optimizations
 
@@ -754,42 +776,55 @@ defined in `CONFORMERS` environment variable
 
 To see the full list of available options and their descriptions, use the `-h` or `--help` command-line option, for example:
 ```bash
-python main.py --help
+python qcdata_gen/main.py --help
 ```
  
 The following example output is printed:
 ```
-usage: main.py [-h] 
-               [--mol_dir MOL_DIR] --out_dir OUT_DIR [--pal PAL] 
-               [--conf_level {ff,semi,dft,ff_dft}] [--rdkit_thresh RDKIT_THRESH] 
-               [--rdkit_nconf RDKIT_NCONF] [--rdkit_thresh_keep RDKIT_THRESH_KEEP] 
-               [--orca_thresh_keep ORCA_THRESH_KEEP] [--orca_path ORCA_PATH] 
-               [--conf_path CONF_PATH]
+usage: main.py [-h] [--exec_mode {conf,cube,conf_and_cube,cube_to_predict}] [--mol_dir MOL_DIR] --out_dir OUT_DIR [--pal PAL] [--conf_level {ff,semi,dft,ff_dft}]
+               [--use_name_convention] [--component {solvent,polymer}] [--rdkit_thresh RDKIT_THRESH] [--rdkit_nconf RDKIT_NCONF]
+               [--rdkit_thresh_keep RDKIT_THRESH_KEEP] [--orca_thresh_keep ORCA_THRESH_KEEP] [--cube_n CUBE_N] [--cube_spacing CUBE_SPACING]
+               [--cube_scaling CUBE_SCALING] [--cube_aug CUBE_AUG] [--extend_cube EXTEND_CUBE] [--orca_path ORCA_PATH] [--conf_path CONF_PATH]
 
-confgen
+ConfGen
 
 optional arguments:
   -h, --help            show this help message and exit
-  --mol_dir MOL_DIR     input .mol structures directory
-  --out_dir OUT_DIR     directory with output data
-  --pal PAL             number of CPU cores to use in calculations
+  --exec_mode {conf,cube,conf_and_cube,cube_to_predict}
+                        Generate conformers and/or cubes
+  --mol_dir MOL_DIR     Input .mol or .xyz structures directory
+  --out_dir OUT_DIR     Directory with output data
+  --pal PAL             Number of CPU cores to use in calculations
   --conf_level {ff,semi,dft,ff_dft}
-                        highest level of conf geometry optimization, 
-                        successively optimize at ff, xtb and dft levels by 
-                        default. For example xtb option will do ff and
+                        Highest level of conf geometry optimization, successively optimize at ff, xtb and dft levels by default. For example xtb option will do ff and
                         xtb optimizations. ff-dft will omit xtb step.
+  --use_name_convention
+                        Suggest structure with xyz-filename starting with: 's_' to be a solvent molecule and with 'p_' to be a monomer - 8 last atoms are suggested to
+                        be screening Me- groups and will be removed for cube eval
+  --component {solvent,polymer}
+                        Suggest all structures in xyz-files to be: solvent - calculate/interpolate cube for the whole molecule polymer - 8 last atoms are suggested to
+                        be screening Me- groups and will be removed for cube eval
   --rdkit_thresh RDKIT_THRESH
-                        conformers energy difference criteria
+                        Conformers energy difference criteria
   --rdkit_nconf RDKIT_NCONF
-                        max number of conformers rdkit will generate
+                        Max number of conformers rdkit will generate
   --rdkit_thresh_keep RDKIT_THRESH_KEEP
-                        energy window to keep conformers within, kJ/mol
+                        Energy window to keep conformers within, kJ/mol
   --orca_thresh_keep ORCA_THRESH_KEEP
-                        energy window to keep conformers within, kJ/mol
+                        Energy window to keep conformers within, kJ/mol
+  --cube_n CUBE_N       Dimension of interpolated .cube, points
+  --cube_spacing CUBE_SPACING
+                        Spacing in interpolated .cube, Angstroem
+  --cube_scaling CUBE_SCALING
+                        Scale electron density
+  --cube_aug CUBE_AUG   Number of augmented .cubes, max is 25
+  --extend_cube EXTEND_CUBE
+                        Number of points to average cube density
   --orca_path ORCA_PATH
-                        ORCA location, it can also be taken from env
+                        ORCA location, can also be taken from env
   --conf_path CONF_PATH
-                        CONFORMERS location, it can also be taken from env
+                        CONFORMERS location, can also be taken from env
+
 ```
 
 
