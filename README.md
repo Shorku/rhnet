@@ -722,27 +722,32 @@ standalone script for identical structures filtering
 ### qcdata_gen setup
 
  
-   Download and install prerequisites.
+   Download and install prerequisites:
+* Generation of both training and inference data requires [ORCA](https://orcaforum.kofo.mpg.de/index.php)
+package. ORCA is available as a ready-to-use binary package and doesn't require
+(for the time being) compilation and installation. For more details refer to 
+the official documentation or [other resources](https://sites.google.com/site/orcainputlibrary/setting-up-orca).
+There are two options for the script to locate ORCA executables. 
+Either ORCA path can be retrieved from $ORCA environmental variable, or it can
+be provided as a command-line option `--orca_path <orca_path>`
      
-   ```
-   this item is under construction
-   ```
 
 ### qcdata_gen run for inference data
 
 The script can consume multiple `.xyz` files from the input directory, perform 
 single-point DFT calculations and convert resulting electron and spin-densities
-to `.npy` format suitable for the ML-model. 
+to `.npy` format suitable for the RhNet model. 
  
    ```bash
    python3 qcdata_gen/main.py --exec_mode cube_to_predict --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --use_name_convention
    ```
-   `--exec_mode cube_to_predict` will instruct the script to perform only a
-single-point calculation on the user-supplied geometry
+   `--exec_mode cube_to_predict` will instruct the script to perform only 
+single-point calculations on the user-supplied geometries. No shifts or 
+rotations will be applied to electron densities
 
-   `--use_name_convention` suggest structure with xyz-filename starting with: 
-'s_' to be a solvent molecule and with 'p_' to be a polymer repeating unit with
-two dangling bonds
+   `--use_name_convention` option suggests a structure with xyz-filename 
+starting with: 's_' to be a solvent molecule and with 'p_' to be a polymer
+repeating unit with two dangling bonds
 
    `<ncores>` number of CPU cores to use in geometry optimizations
 
@@ -781,10 +786,15 @@ python qcdata_gen/main.py --help
  
 The following example output is printed:
 ```
-usage: main.py [-h] [--exec_mode {conf,cube,conf_and_cube,cube_to_predict}] [--mol_dir MOL_DIR] --out_dir OUT_DIR [--pal PAL] [--conf_level {ff,semi,dft,ff_dft}]
-               [--use_name_convention] [--component {solvent,polymer}] [--rdkit_thresh RDKIT_THRESH] [--rdkit_nconf RDKIT_NCONF]
-               [--rdkit_thresh_keep RDKIT_THRESH_KEEP] [--orca_thresh_keep ORCA_THRESH_KEEP] [--cube_n CUBE_N] [--cube_spacing CUBE_SPACING]
-               [--cube_scaling CUBE_SCALING] [--cube_aug CUBE_AUG] [--extend_cube EXTEND_CUBE] [--orca_path ORCA_PATH] [--conf_path CONF_PATH]
+usage: main.py [-h] [--exec_mode {conf,cube,conf_and_cube,cube_to_predict}] 
+               [--mol_dir MOL_DIR] --out_dir OUT_DIR [--pal PAL] 
+               [--conf_level {ff,semi,dft,ff_dft}] [--use_name_convention] 
+               [--component {solvent,polymer}] [--rdkit_thresh RDKIT_THRESH] 
+               [--rdkit_nconf RDKIT_NCONF] [--rdkit_thresh_keep RDKIT_THRESH_KEEP] 
+               [--orca_thresh_keep ORCA_THRESH_KEEP] [--cube_n CUBE_N] 
+               [--cube_spacing CUBE_SPACING] [--cube_scaling CUBE_SCALING] 
+               [--cube_aug CUBE_AUG] [--extend_cube EXTEND_CUBE] 
+               [--orca_path ORCA_PATH] [--conf_path CONF_PATH]
 
 ConfGen
 
@@ -833,7 +843,7 @@ optional arguments:
 - [ ] complete documentation
 ### Inference
 - [x] inference utility
-- [ ] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
+- [x] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
 - [ ] prune and upload fitted models
 - [ ] utility for nice inference reports (Matplotlib + LaTeX?)
 - [ ] option for a lighter (RI-PBE/def2-SVP?) electron density calculation
