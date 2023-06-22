@@ -224,6 +224,26 @@ PARSER.add_argument('--checkpoint_every',
                     default=0,
                     help="""Save checkpoint every ... epochs""")
 
+PARSER.add_argument('--initial_epoch',
+                    type=int,
+                    default=0,
+                    help="""Initial epoch for training""")
+
+PARSER.add_argument('--prune_model',
+                    type=float,
+                    default=None,
+                    help="""Define final sparsity for model pruning""")
+
+PARSER.add_argument('--prune_start',
+                    type=int,
+                    default=None,
+                    help="""Define model pruning starting step""")
+
+PARSER.add_argument('--prune_end',
+                    type=int,
+                    default=None,
+                    help="""Define model pruning final step""")
+
 # Regularization parameters
 
 PARSER.add_argument('--dnn_dropout',
@@ -300,6 +320,10 @@ def parse_args(flags):
         'epochs': flags.epochs,
         'evaluate_every': flags.evaluate_every,
         'checkpoint_every': flags.checkpoint_every,
+        'initial_epoch': flags.initial_epoch,
+        'prune_model': flags.prune_model,
+        'prune_start': flags.prune_start,
+        'prune_end': flags.prune_end,
         # Regularization parameters
         'dnn_dropout': flags.dnn_dropout,
         'cnn_dropout': flags.cnn_dropout,

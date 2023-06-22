@@ -458,6 +458,13 @@ polymer,solvent
     epochs. DEFAULT: `1`.
 * `--checkpoint_every`: Save a model checkpoint every n epochs. Will not save
     checkpoints if set to `0`. DEFAULT: `0`.
+* `--initial_epoch`: Set initial epoch for model fitting. Applied only to 
+functional models. This option is only needed for correct callbacks functioning
+while fitting loaded models. Otherwise, it has no effect. DEFAULT: `0`.
+* `--prune_model`: Define final model sparsity and perform model pruning with
+polynomial decay schedule. DEFAULT: `None`.
+* `--prune_start`: Define model pruning starting step. DEFAULT: `0`.
+* `--prune_end`: Define model pruning final step. DEFAULT: `None`.
 
 
 #### Regularization parameters

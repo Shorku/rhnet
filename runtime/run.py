@@ -5,6 +5,7 @@ import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import tensorflow_model_optimization as tfmot
 
 
 def train(params, model, dataset, logger, fold_no=None):
@@ -183,6 +184,17 @@ def train_builtin(params, model, dataset, optimizer, fold_no):
     else:
         validation_data = None
 
+    if params.prune_model:
+        pruning_params = \
+            {'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(
+                initial_sparsity=0,
+                final_sparsity=params.prune_model,
+                begin_step=params.prune_start,
+                end_step=params.prune_end)}
+        model = \
+            tfmot.sparsity.keras.prune_low_magnitude(model, **pruning_params)
+        callbacks.append(tfmot.sparsity.keras.UpdatePruningStep())
+
     model.compile(optimizer=optimizer,
                   loss=tf.keras.losses.MeanSquaredError(name='mse_loss'),
                   metrics=[tf.keras.metrics.MeanSquaredError(name='mse_loss'),
@@ -195,7 +207,8 @@ def train_builtin(params, model, dataset, optimizer, fold_no):
               steps_per_epoch=max_steps,
               validation_data=validation_data,
               validation_freq=params.evaluate_every,
-              callbacks=callbacks)
+              callbacks=callbacks,
+              initial_epoch=params.initial_epoch)
 
 
 def train_custom(params, model, dataset, optimizer, checkpoint,
