@@ -97,7 +97,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
  
 2. Build the NGC container with additional layers
      
-   ```
+   ```bash
    sudo docker build -t rhnet .
    ```
   
@@ -115,16 +115,20 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 3. Start the NGC container in the interactive mode
   
    ```bash
-   mkdir data
-   mkdir results
-   sudo docker run --runtime=nvidia -it --shm-size=<available_RAM>g --ulimit memlock=-1 --gpus all --rm --ipc=host -v ${PWD}/data:/data -v ${PWD}/results:/results rhnet /bin/bash
+   mkdir local_dataset_folder_path
+   mkdir local_model_folder_path
+   mkdir local_logs_folder_path
+   sudo docker run --runtime=nvidia -it --shm-size=<available_RAM>g --ulimit memlock=-1 --gpus all --rm --ipc=host -v local_dataset_folder_path:dataset_folder_path -v local_model_folder_path:model_folder_path -v local_logs_folder_path:logs_folder_path rhnet /bin/bash
    ```
   
-   This command will launch the container and mount the `./data` directory as a
-   volume to the `/data` directory inside the container, and `./results` 
-   directory to the `/results` directory in the container. Any results (logs, 
-   checkpoints, etc.) will be saved to `/results` and will be accessible
-   in the `./results` directory on the host.
+   This command will launch the container and mount the 
+   `local_dataset_folder_path` directory containing quantum-chemical data as a 
+   volume to the `dataset_folder_path` directory inside the container, 
+   `local_model_folder_path` directory, containing a pre-trained model or 
+   checkpoints to the `model_folder_path` directory in the container, and 
+   `local_logs_folder_path` directory containing log-files to the
+   `logs_folder_path` directory inside the container. These will be accessible
+   both from the host and docker container.
 
    **Note**, *`--shm-size=100g` for example will share 100 GiB between the host
    and your docker container: pnet preloads the quantum chemical data to the 
@@ -175,9 +179,35 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 ### Run
 
 1. Inference
+   ```bash
+   python3 main.py --load_model --exec_mode predict --data_dir dataset_folder_path --model_dir model_folder_path --log_dir logs_folder_path --log_name logfile_name --use_only_mw --use_only_amorph --augment 1 --batch_size 32
+   ```
+   `--load_model` tells the script to load an already trained and saved model. 
+   It will override `--model` option.
 
-   **Coming soon**
- 
+   `--data_dir` specifies the path to a folder with the data for prediction. 
+   Note, the data for fit and prediction has slightly different format as 
+   described in [Dataset for inference](#dataset-for-inference) section.
+
+   `--model_dir` specifies the path to a folder with a pre-trained Keras model.
+   As usual, it is expected to contain `saved_model` folder
+   (`model_folder_path/saved_model`).
+
+   `--log_dir` specifies the path to a folder where the calculated data will be
+   stored.
+
+   `--use_only_mw` tells the script to use only Mw (weight-average molecular 
+   mass) feature and to omit Mn (number-average molecular mass) feature, which 
+   is the way the current model is trained. Should be used with our pre-trained
+   models.
+
+   `--use_only_amorph` tells the script to use only amorphous polymers and omit
+   crystallinity feature. Should be used with our pre-trained models.
+
+   `--augment 1` tells the script to skip rotations and shifts of the electron
+   density images, which is unnecessary for inference.
+
+
 2. Training
    
    **Actual model**
