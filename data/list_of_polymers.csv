@@ -1,73 +1,73 @@
 polymer,abr,name,ptype
 1,Matrimid,"5(6)- amino-1-(4'-aminophenyl)-1,3,-trimethylindane",PI
-2,PCL,"poly(e-caprolactone)",PES
-3,PE,"polyethylene",PO
-4,PEG,"poly(ethylene glycol)",PET
-5,PET,"poly(ethylene terephthalate)",PES
-6,PLA,"poly(lactic acid)",PES
-7,PMMA,"poly(methyl methacrylate)",PO
-8,PP,"polypropylene",PO
-9,PPG,"poly(propylene glycol)",PET
-10,PS,"polystyrene",PO
+2,PCL,poly(e-caprolactone),PES
+3,PE,polyethylene,PO
+4,PEG,poly(ethylene glycol),PET
+5,PET,poly(ethylene terephthalate),PES
+6,PLA,poly(lactic acid),PES
+7,PMMA,poly(methyl methacrylate),PO
+8,PP,polypropylene,PO
+9,PPG,poly(propylene glycol),PET
+10,PS,polystyrene,PO
 11,PSU,"polysulfone, poly(bisphenol-A sulfone)",PETA
-12,PVDF,"poly(vinylidene fluoride)",PO
-13,PBS,"poly(butylene succinate)",PES
+12,PVDF,poly(vinylidene fluoride),PO
+13,PBS,poly(butylene succinate),PES
 14,PPE,"poly(2,6-dimethyl-1,4-phenylene ether)",PETA
-15,PVAc,"poly(vinyl acetate)",PO
+15,PVAc,poly(vinyl acetate),PO
 16,PEI,"Polyether-imide poly(bisphenol-A-co-4- nitrophthalicanhydride-co-1,3-phenylenediamine)",PI
-17,PPS,"poly(propylene sebacate)",PES
-18,PTMSN,"poly(trimethyl silyl norbornene)",POC
-19,PI,"polyisoprene",DI
-20,CR,"polychloroprene",DI
+17,PPS,poly(propylene sebacate),PES
+18,PTMSN,poly(trimethyl silyl norbornene),POC
+19,PI,polyisoprene,DI
+20,CR,polychloroprene,DI
 21,PC,"polycarbonate, poly(bisphenol-A carbonate)",PESA
-22,PEEK,"polyether ether ketone",PETA
-23,PDMS,"polydimethylsiloxane",SI
-24,PEMA,"poly(ethyl methacrylate)",PO
-25,PTMSP ,"poly(trimethylsilyl)propyne",PA
-26,PTFE,"polytetrafluoroethylene",PO
-27,PVA,"poly(vinyl alcohol)",PO
-28,PAS,"poly(p-acetoxystyrene)",PO
-29,PpOMS,"poly(p-methoxystyrene)",PO
-30,PBMA,"poly(butyl methacrylate)",PO
-31,PnPMA,"poly(n-pentyl methacrylate)",PO
-32,PTFS,"poly(trifluoro styrene)",PO
+22,PEEK,polyether ether ketone,PETA
+23,PDMS,polydimethylsiloxane,SI
+24,PEMA,poly(ethyl methacrylate),PO
+25,PTMSP ,poly(trimethylsilyl)propyne,PA
+26,PTFE,polytetrafluoroethylene,PO
+27,PVA,poly(vinyl alcohol),PO
+28,PAS,poly(p-acetoxystyrene),PO
+29,PpOMS,poly(p-methoxystyrene),PO
+30,PBMA,poly(butyl methacrylate),PO
+31,PnPMA,poly(n-pentyl methacrylate),PO
+32,PTFS,poly(trifluoro styrene),PO
 33,pPBI,"poly(2,2'-(p-phenylene)-5,5'-bibenzimidazole)",PI
 34,PMMD,"poly(4-methyl-2-methylene-1,3-dioxolane)",POC
-35,PTiPrOSN,"poly(5-triisopropoxysilyl-2-norbornene)",POC
-36,PTPrOSN,"poly(5-tripropoxysilyl-2-norbornene)",POC
-37,PTEtOSN,"poly(5-triethoxysilyl-2-norbornene)",POC
-38,PTMeOSN,"poly(5-trimethoxysilyl-2-norbornene)",POC
-39,PMeTMeOSN,"poly(5-methyltrimethoxysilyl-2-norbornene)",POC
-40,PEtTMeOSN,"poly(5-ethyltrimethoxysilyl-2-norbornene)",POC
-41,PEtTMeOEtOSN,"poly(5-tris(2-methoxyethoxy)-2-norbornene)",POC
+35,PTiPrOSN,poly(5-triisopropoxysilyl-2-norbornene),POC
+36,PTPrOSN,poly(5-tripropoxysilyl-2-norbornene),POC
+37,PTEtOSN,poly(5-triethoxysilyl-2-norbornene),POC
+38,PTMeOSN,poly(5-trimethoxysilyl-2-norbornene),POC
+39,PMeTMeOSN,poly(5-methyltrimethoxysilyl-2-norbornene),POC
+40,PEtTMeOSN,poly(5-ethyltrimethoxysilyl-2-norbornene),POC
+41,PEtTMeOEtOSN,poly(5-tris(2-methoxyethoxy)-2-norbornene),POC
 42,PES,"polyethersulfone, poly(oxy-1,4-phenylenesulfonyl-1,4-phenylene)",PETA
-43,PEGE,"poly(ethyl glycidyl ether)",PET
-44,PiPGE,"poly(iso-propyl glycidil ether)",PET
-45,PAGE,"poly(allyl glycidil ether)",PET
-46,PnBGE,"poly(n-butyl glycidyl ether)",PET
-47,PEVE,"poly(ethyl vinyl ether)",PO
-48,PEF,"poly(ethylene furanoate)",PES
-49,6FDA-TrMPD,"6FDA-DAM",PI
+43,PEGE,poly(ethyl glycidyl ether),PET
+44,PiPGE,poly(iso-propyl glycidil ether),PET
+45,PAGE,poly(allyl glycidil ether),PET
+46,PnBGE,poly(n-butyl glycidyl ether),PET
+47,PEVE,poly(ethyl vinyl ether),PO
+48,PEF,poly(ethylene furanoate),PES
+49,6FDA-TrMPD,6FDA-DAM,PI
 50,6FDA-TrMCA,,PI
 51,6FDA-TrMSA,,PI
-52,PIB,"polyisobutylene",PO
+52,PIB,polyisobutylene,PO
 53,6FDA-6FpDA,,PI
-54,PBzMA,"poly(benzyl methacrylate)",PO
+54,PBzMA,poly(benzyl methacrylate),PO
 55,6FDA-MPD,,PI
 56,6FDA-TMPPD,,PI
 57,6FDA-4`4-DPE,,PI
 58,6FDA-PPD,,PI
-59,PVP,"poly (N-vinyl-2-pyrrolidone)",PO
-60,PHEMA,"poly (2- hydroxyethylmethacrylate)",PO
-61,poly(2-MAdMA),"poly(2-methyl-2- adamantylmethacrylate)",PO
-62,poly(2-EAdMA),"poly(2-ethyl-2-adamantylmethacrylate)",PO
+59,PVP,poly (N-vinyl-2-pyrrolidone),PO
+60,PHEMA,poly (2- hydroxyethylmethacrylate),PO
+61,poly(2-MAdMA),poly(2-methyl-2- adamantylmethacrylate),PO
+62,poly(2-EAdMA),poly(2-ethyl-2-adamantylmethacrylate),PO
 63,PTCNSi2g,"poly(3,3-bis(trimethylsilyl)tricyclononene-7)",POC
-64,PPTBPA,"poly[1-phenyl-2-(p-tert-butylphenyl)acetylene",PA
+64,PPTBPA,poly[1-phenyl-2-(p-tert-butylphenyl)acetylene,PA
 65,mPBI,"poly(2,2'-(m-phenylene)-5,5'-bibenzimidazole)",PI
-66,PVC,"poly(vinyl chloride)",PO
-67,PEA,"poly(ethyl acrylate)",PO
-68,PDA,"poly(decyl acrylate)",PO
-69,PBA,"poly(behenyl acrylate)",PO
+66,PVC,poly(vinyl chloride),PO
+67,PEA,poly(ethyl acrylate),PO
+68,PDA,poly(decyl acrylate),PO
+69,PBA,poly(behenyl acrylate),PO
 70,BPDA-44DPE,,PI
 71,BPDA-DDS,,PI
 72,DSDA-TPER,,PI
@@ -78,30 +78,30 @@ polymer,abr,name,ptype
 77,6FDA-5CMPD,,PI
 78,6FDA-34DPE,,PI
 79,6FDA-44DDM,,PI
-80,P[VBTMA][BF4],"poly(p-vinylbenzyltrimethyl ammonium tetrafluoroborate)",PIL	
-81,P[MATMA][BF4],,PIL	
-82,P[VBBI][BF4],,PIL	
-83,P[MABI][BF4],,PIL	
-84,P[VBTEA][PF6],,PIL	
-85,PVIm,"poly(1-vinylimidazole)",PO
-86,P[VBIm][BF4],,PIL	
-87,P[VBIm][Br],,PIL	
+80,P[VBTMA][BF4],poly(p-vinylbenzyltrimethyl ammonium tetrafluoroborate),PIL
+81,P[MATMA][BF4],,PIL
+82,P[VBBI][BF4],,PIL
+83,P[MABI][BF4],,PIL
+84,P[VBTEA][PF6],,PIL
+85,PVIm,poly(1-vinylimidazole),PO
+86,P[VBIm][BF4],,PIL
+87,P[VBIm][Br],,PIL
 88,P[VBIm][SCN],,PIL
-89,P4VP,"poly(4-vinylpyridine)",PO
-90,PDMAEMA,"poly(2-dimethyl aminoethyl methacrylate)",PO
-91,PAA,"poly(acrylic acid)",PO
-92,PVME,"poly(vinyl methyl ether)",PO
-93,PEV,"poly(ethylene vanillate)",PES,
-94,PNB,"poly(norbornene)",POC
-95,PVB,"poly(vinyl benzoate)",PO
+89,P4VP,poly(4-vinylpyridine),PO
+90,PDMAEMA,poly(2-dimethyl aminoethyl methacrylate),PO
+91,PAA,poly(acrylic acid),PO
+92,PVME,poly(vinyl methyl ether),PO
+93,PEV,poly(ethylene vanillate),PES
+94,PNB,poly(norbornene),POC
+95,PVB,poly(vinyl benzoate),PO
 96,TMPSF,"3,3',5,5'-tetramethyl bisphenol-A polysulfone",PETA
 97,DMPSF,"3,3'-dimethyl bisphenol-A (bisphenol-C) polysulfone",PETA
 98,DMPSF-Z,"3,3'-dimethylbisphenol-Z polysulfone",PETA
 99,BIPSF,"polyphenylenesulfone, biphenol polysulfone",PETA
 100,TMBIPSF,"3,3',5,5'-tetramethyl biphenol polysulfone",PETA
 101,HMBIPSF,"2,2',3,3',5,5'-hexamethyl biphenol polysulfone",PETA
-102,PVTMS,"poly(vinyltrimethyl silane)",PETA
-103,PTMSDPA,"Poly[1-phenyl-2-[p-(trimethylsilyl)phenyl]acetylene]",PA
-104,PMP,"poly(4-methyl-2-pentyne)",PA
-105,PPP,"poly(1-phenyl-1-propyne)",PA
-106,PMA,"poly(methyl acrylate)",PO
+102,PVTMS,poly(vinyltrimethyl silane),PETA
+103,PTMSDPA,Poly[1-phenyl-2-[p-(trimethylsilyl)phenyl]acetylene],PA
+104,PMP,poly(4-methyl-2-pentyne),PA
+105,PPP,poly(1-phenyl-1-propyne),PA
+106,PMA,poly(methyl acrylate),PO

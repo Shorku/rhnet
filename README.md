@@ -98,7 +98,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 2. Build the NGC container with additional layers
      
    ```
-   docker build -t rhnet .
+   sudo docker build -t rhnet .
    ```
   
    The NGC container encapsulates Python, TensorFlow and other necessary 
@@ -117,7 +117,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    ```bash
    mkdir data
    mkdir results
-   docker run --runtime=nvidia -it --shm-size=<available_RAM>g --ulimit memlock=-1 --gpus all --rm --ipc=host -v ${PWD}/data:/data -v ${PWD}/results:/results rhnet /bin/bash
+   sudo docker run --runtime=nvidia -it --shm-size=<available_RAM>g --ulimit memlock=-1 --gpus all --rm --ipc=host -v ${PWD}/data:/data -v ${PWD}/results:/results rhnet /bin/bash
    ```
   
    This command will launch the container and mount the `./data` directory as a
