@@ -110,6 +110,13 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    **Note**, *the quantum-chemical data may be really huge. Make sure there is 
    no  quantum-chemical data within the current folder while building rhnet 
    image, otherwise it will be also copied.*
+
+   **Note**, *Current models and related routines were prepared with 
+   TensorFlow 2.5.0 which runs only with numpy<=1.21. On the other hand 
+   TensorFlow Model Optimization requires numpy=>1.23. An ugly solution is
+   to forcefully install numpy==1.21 after the requirements are installed,
+   which is done while building docker container. Somehow it works. I will try 
+   to move to a newer TensorFlow version some time later*
    
    
 3. Start the NGC container in the interactive mode

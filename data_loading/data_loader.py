@@ -619,11 +619,11 @@ class DatasetPred(Dataset):
             examples_num = int(range_slice.at['npstep'] *
                                range_slice.at['ntstep'])
             range_num += [s for i in range(examples_num)]
-            ref_temperature = list(np.linspace(int(range_slice.at['tmin']),
-                                               int(range_slice.at['tmax']),
+            ref_temperature = list(np.linspace(range_slice.at['tmin'],
+                                               range_slice.at['tmax'],
                                                int(range_slice.at['ntstep'])))
-            ref_pressure = list(np.linspace(int(range_slice.at['pmin']),
-                                            int(range_slice.at['pmax']),
+            ref_pressure = list(np.linspace(range_slice.at['pmin'],
+                                            range_slice.at['pmax'],
                                             int(range_slice.at['npstep'])))
             for t in ref_temperature:
                 pressure += ref_pressure

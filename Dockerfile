@@ -5,3 +5,4 @@ WORKDIR /workspace/rhnet
 
 RUN pip3 install git+https://github.com/NVIDIA/dllogger
 RUN pip3 install -r requirements.txt
+RUN pip3 install -U numpy==1.21
