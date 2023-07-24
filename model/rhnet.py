@@ -103,9 +103,9 @@ def multikernel(dnn_dropout, cnn_dropout, dnn_l2, cnn_l2, precision,
 
     """
     # Define layers
-    conv3_unit_list = [8, 8, 16, 32, 128, 128]
-    conv5_unit_list = [4, 4, 8, 16, 128]
-    conv7_unit_list = [2, 2, 4, 8]
+    conv3_unit_list = [16, 16, 32, 64, 128, 128]
+    conv5_unit_list = [8, 8, 16, 32, 128]
+    conv7_unit_list = [4, 4, 8, 16]
     conv3_pad_list = ['SAME', 'SAME', 'SAME', 'SAME', 'VALID', 'VALID']
     conv5_pad_list = ['SAME', 'SAME', 'SAME', 'SAME', 'VALID']
     conv7_pad_list = ['SAME', 'SAME', 'SAME', 'SAME']

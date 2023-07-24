@@ -888,6 +888,9 @@ optional arguments:
 ### Inference
 - [x] inference utility
 - [x] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
+- [ ] convert pressure and temperature back to MPa and K in inference log
+- [ ] convert predicted values to weight fractions in inference log
+- [ ] add option to choose printing predicted values in cm3(STP)/cm3 
 - [ ] prune and upload fitted models
 - [ ] utility for nice inference reports (Matplotlib + LaTeX?)
 - [ ] option for a lighter (RI-PBE/def2-SVP?) electron density calculation

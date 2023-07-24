@@ -191,8 +191,22 @@ def train_builtin(params, model, dataset, optimizer, fold_no):
                 final_sparsity=params.prune_model,
                 begin_step=params.prune_start,
                 end_step=params.prune_end)}
+
+        def apply_pruning_to_layer(layer):
+            if (isinstance(layer, tf.keras.layers.Dense) or
+                    isinstance(layer, tf.keras.layers.Conv3D)):
+                return tfmot.\
+                    sparsity.keras.prune_low_magnitude(layer,
+                                                       **pruning_params)
+            return layer
+        # Layers like tf.keras.layers.experimental.preprocessing.Rescaling are
+        # currently not supported by tfmot, hence prune_low_magnitude() is
+        # applied layer by layer
         model = \
-            tfmot.sparsity.keras.prune_low_magnitude(model, **pruning_params)
+            tf.keras.models.clone_model(model,
+                                        clone_function=apply_pruning_to_layer)
+        # model = \
+        #     tfmot.sparsity.keras.prune_low_magnitude(model, **pruning_params)
         callbacks.append(tfmot.sparsity.keras.UpdatePruningStep())
 
     model.compile(optimizer=optimizer,
