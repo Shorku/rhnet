@@ -65,12 +65,12 @@ verification models (see for example
 ## Reference
 
 The research paper with detailed description of the project is available 
-on-line at [ChemRxiv](https://doi.org/10.26434/chemrxiv-2023-tqv4p). In case 
+on-line at [ChemRxiv](https://doi.org/10.26434/chemrxiv-2023-tqv4p-v3). In case 
 you find the model or the dataset useful please cite:
 
 Gromov, O.I. Predicting the Solubility of Gases, Vapors, and Supercritical 
 Fluids in Amorphous Polymers from Electron Density using Convolutional Neural
-Networks, ChemRxiv, 2023, 10.26434/chemrxiv-2023-tqv4p
+Networks, ChemRxiv, 2023, 10.26434/chemrxiv-2023-tqv4p-v3
 
 
 
