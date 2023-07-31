@@ -117,37 +117,22 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    to forcefully install numpy==1.21 after the requirements are installed,
    which is done while building docker container. Somehow it works. I will try 
    to move to a newer TensorFlow version some time later*
-   
-   
-3. Start the NGC container in the interactive mode
-  
-   ```bash
-   mkdir local_dataset_folder_path
-   mkdir local_model_folder_path
-   mkdir local_logs_folder_path
-   sudo docker run --runtime=nvidia -it --shm-size=<available_RAM>g --ulimit memlock=-1 --gpus all --rm --ipc=host -v local_dataset_folder_path:dataset_folder_path -v local_model_folder_path:model_folder_path -v local_logs_folder_path:logs_folder_path rhnet /bin/bash
-   ```
-  
-   This command will launch the container and mount the 
-   `local_dataset_folder_path` directory containing quantum-chemical data as a 
-   volume to the `dataset_folder_path` directory inside the container, 
-   `local_model_folder_path` directory, containing a pre-trained model or 
-   checkpoints to the `model_folder_path` directory in the container, and 
-   `local_logs_folder_path` directory containing log-files to the
-   `logs_folder_path` directory inside the container. These will be accessible
-   both from the host and docker container.
 
-   **Note**, *`--shm-size=100g` for example will share 100 GiB between the host
-   and your docker container: pnet preloads the quantum chemical data to the 
-   RAM and in the case of huge datasets will need more RAM, than the default 
-   amount. Make sure to adjust this parameter.*
 
-     
-4. Download or generate the data
-   
+3. Download or generate the data
+
+   Pre-trained model (multikernel option) can be downloaded from a [separate 
+   repository](https://github.com/Shorku/rhnet_models/raw/main/multikernel.tar.xz) (18,5 MB)
+      
    `rhnet/data` folder contains experimental data and other necessary
    tables for the RhNet to perform training and inference. The only exception
-   are the electron densities, which can be downloaded elsewhere.
+   are the electron densities, which can be downloaded elsewhere:
+ 
+   [Density images used to train the current model](https://www.dropbox.com/s/w84cqv9z0vl4f0y/density_npy.tar.xz?dl=0) (28,6 GB)
+ 
+   [Density images used to train the current model (unshifted)](https://www.dropbox.com/s/bavwbo78h3ay7ld/density.tar.xz?dl=0) (1,1 GB)  
+
+   [Full example of the data folder for inference](https://github.com/Shorku/rhnet_models/raw/main/test_data.tar.xz)
 
    To perform **both training and inference** the script expects the dataset
    folder to contain the following files:
@@ -180,7 +165,31 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    [Dataset structure](#dataset-structure) section.
 
    For a custom dataset generation procedure refer to 
-   [Electron density generation](#electron-density-generation) section.
+   [Electron density generation](#electron-density-generation) section.   
+
+   
+4. Start the NGC container in the interactive mode
+  
+   ```bash
+   mkdir local_dataset_folder_path
+   mkdir local_model_folder_path
+   mkdir local_logs_folder_path
+   sudo docker run --runtime=nvidia -it --shm-size=<available_RAM>g --ulimit memlock=-1 --gpus all --rm --ipc=host -v local_dataset_folder_path:dataset_folder_path -v local_model_folder_path:model_folder_path -v local_logs_folder_path:logs_folder_path rhnet /bin/bash
+   ```
+  
+   This command will launch the container and mount the 
+   `local_dataset_folder_path` directory containing quantum-chemical data as a 
+   volume to the `dataset_folder_path` directory inside the container, 
+   `local_model_folder_path` directory, containing a pre-trained model or 
+   checkpoints to the `model_folder_path` directory in the container, and 
+   `local_logs_folder_path` directory containing log-files to the
+   `logs_folder_path` directory inside the container. These will be accessible
+   both from the host and docker container.
+
+   **Note**, *`--shm-size=100g` for example will share 100 GiB between the host
+   and your docker container: pnet preloads the quantum chemical data to the 
+   RAM and in the case of huge datasets will need more RAM, than the default 
+   amount. Make sure to adjust this parameter.*
 
    
 ### Run
@@ -217,7 +226,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 
 2. Training
    
-   **Actual model**
+   **Current model**
    ```bash
    python3 main.py --data_dir /data --model_dir /results --batch_size 8 --epochs 100 --exec_mode train --log_name multikernel --augment 25 --model multikernel --api builtin --use_only_mw --use_only_amorph --store_density cache --xla --amp --activation elu --learning_rate 0.000005 --save_model --log_dir tb_logs/fit --make_even --eval_define val_pairs.csv --checkpoint_every 20 --dnn_l2 0.00001 --cnn_l2 0.00001
    ```
@@ -891,7 +900,7 @@ optional arguments:
 - [ ] convert pressure and temperature back to MPa and K in inference log
 - [ ] convert predicted values to weight fractions in inference log
 - [ ] add option to choose printing predicted values in cm3(STP)/cm3 
-- [ ] prune and upload fitted models
+- [x] prune and upload fitted models
 - [ ] utility for nice inference reports (Matplotlib + LaTeX?)
 - [ ] option for a lighter (RI-PBE/def2-SVP?) electron density calculation
 ### Maintenance
