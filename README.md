@@ -8,9 +8,6 @@ polymer using a pre-calculated distribution of the electron density.
 
 *(image created using DALL·E 2)*
 
-**_!!! Please, note that inference and preparation of data for inference are 
-not yet implemented, but will be available soon !!!_** 
-
 ## Contents
  
 - [Overview](#overview)
