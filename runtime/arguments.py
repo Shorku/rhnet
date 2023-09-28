@@ -130,6 +130,10 @@ PARSER.add_argument('--augment',
                     geometry. Note: the option affects only indexing,
                     augmentation itself is done elsewhere""")
 
+PARSER.add_argument('--augment_onthefly', dest='augment_onthefly',
+                    action='store_true',
+                    help="""Shift and rotate images on the fly""")
+
 PARSER.add_argument('--even_ratios_distrib', '--make_even', dest='make_even',
                     action='store_true', help="""Tune sampling weights
                     to equalize impacts of the examples with medium and high
@@ -303,6 +307,7 @@ def parse_args(flags):
         'use_ctp': flags.use_ctp,
         # Data related parameters
         'augment': flags.augment,
+        'augment_onthefly': flags.augment_onthefly,
         'make_even': flags.make_even,
         'analysis_n': flags.analysis_n,
         # Evaluation split parameters
