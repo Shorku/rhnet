@@ -414,12 +414,12 @@ class DatasetFit(Dataset):
         cube_rot = [random.random() * 360 for i in range(3)]
         cube_copy = np.copy(cube).astype(np.float32)
         for i in range(2):
-            cube_copy[:, :, :, i] = shift(cube_copy[:, :, :, i], cube_shift,
-                                          cval=0, prefilter=False, order=0)
             for angle, axes in zip(cube_rot, [(1, 0), (2, 0), (2, 1)]):
                 cube_copy[:, :, :, i] = \
                     rotate(cube_copy[:, :, :, i], angle, axes=axes,
                            reshape=False, order=3, cval=0.0, prefilter=False)
+            cube_copy[:, :, :, i] = shift(cube_copy[:, :, :, i], cube_shift,
+                                          cval=0, prefilter=False, order=0)
         return cube_copy.astype(self.load_precision)
 
     def _form_index_tables(self,
