@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from scipy.ndimage import shift, rotate
+from scipy.ndimage import rotate
 from model.params import scale_params, image_dim, macro_dim
 
 
@@ -171,8 +171,10 @@ class DatasetFit(Dataset):
         self.data_csv = params.data_csv
         if params.augment_onthefly:
             self.aug = 1
+            self.store_sparse = False
         else:
             self.aug = params.augment
+            self.store_sparse = params.store_sparse
         self.aug_onthefly = params.augment_onthefly
         self.fold = params.fold
         self.eval_split = params.eval_split
@@ -212,6 +214,8 @@ class DatasetFit(Dataset):
         # Load electron density
         if self.store_density == 'ram':
             self._load_cubes()
+        elif self.store_density == 'file':
+            self.store_sparse = False
         # Drop some columns from index tables to save some memory
         try:
             self.index_table
@@ -234,8 +238,6 @@ class DatasetFit(Dataset):
         else:
             self.index_table_eval = self.index_table_eval. \
                 drop(['polymer', 'solvent'], axis=1)
-        self.poly_margin_set = {}
-        self.solv_margin_set = {}
 
     def _load_experimental(self):
         """Load experimental data set to Pandas dataframe"""
@@ -328,43 +330,17 @@ class DatasetFit(Dataset):
                 solv_df.merge(aug_df, how='cross').
                 rename(columns={'aug': 'saug'}))
 
-    def _calc_margins(self, cube):
-        margins = [[0, 0], [0, 0], [0, 0]]
-        if not self.aug_onthefly:
-            return margins
-        voxels = cube[:, :, :, 0]
-        dim = self.image_dim[0]
-        profiles = [[voxels[i, :, :].sum() for i in range(dim)],
-                    [voxels[:, i, :].sum() for i in range(dim)],
-                    [voxels[:, :, i].sum() for i in range(dim)]]
-        for axis in range(3):
-            for i in range(dim):
-                if profiles[axis][i] != 0:
-                    margins[axis][0] = -i
-                    break
-            for i in range(dim):
-                if profiles[axis][dim - i - 1] != 0:
-                    margins[axis][1] = i
-                    break
-        return margins
-
-    def _load_cube(self, name):
-        """Load one electron density file, expects filename.npy as name"""
-        cube = super()._load_cube(name)
-        margins = self._calc_margins(cube)
-        return cube, margins
-
-    def _load_cube_sparse(self, name):
-        """Load one electron density file and return sparse tensor,
-        expects filename.npy as name"""
-        cube, margins = self._load_cube(name)
-        return sparse.COO.from_numpy(cube.astype(self.load_precision)), margins
-
-    def _load_cube_dense(self, name):
-        """Load one electron density file and return dense tensor,
+    def _load_cube_conditional(self, name):
+        """Load one electron density file and return dense or sparse tensor,
          expects filename.npy as name"""
-        cube, margins = self._load_cube(name)
-        return cube.astype(self.load_precision), margins
+        if self.aug_onthefly:
+            cube = self._load_cube(name)
+        else:
+            if self.store_sparse:
+                cube = self._load_cube_sparse(name)
+            else:
+                cube = self._load_cube_dense(name)
+        return cube
 
     def _load_cubes(self):
         """Load electron density into RAM"""
@@ -373,13 +349,11 @@ class DatasetFit(Dataset):
         for i in os.listdir(os.path.join(self._data_dir, 'cubes')):
             if ('.npy' in i
                     and int(i.split('_')[1]) in compound_set[i.split('_')[0]]):
-                cube, margin = self._load_cube_sparse(i)
+                cube = self._load_cube_conditional(i)
                 if i.split('_')[0] == 'p':
                     self.poly_cube_set[i.split('.')[0]] = cube
-                    self.poly_margin_set[i.split('.')[0]] = margin
                 elif i.split('_')[0] == 's':
                     self.solv_cube_set[i.split('.')[0]] = cube
-                    self.solv_margin_set[i.split('.')[0]] = margin
 
     def _cube_from_df(self, df_sample, df_exp):
         """Form dictionary key to retrieve array with electron density"""
@@ -394,33 +368,56 @@ class DatasetFit(Dataset):
                                        str(df_sample.at['saug'])
                                        ]))
         if self.store_density == 'file':
-            return (self._load_cube_dense(f'{poly}.npy'),
-                    self._load_cube_dense(f'{solv}.npy'))
+            return (self._load_cube_conditional(f'{poly}.npy'),
+                    self._load_cube_conditional(f'{solv}.npy'))
         if poly not in self.poly_cube_set:
-            cube, margin = self._load_cube_sparse(f'{poly}.npy')
-            self.poly_cube_set[poly] = cube
-            self.poly_margin_set[poly] = margin
+            self.poly_cube_set[poly] = \
+                self._load_cube_conditional(f'{poly}.npy')
         if solv not in self.solv_cube_set:
-            cube, margin = self._load_cube_sparse(f'{solv}.npy')
-            self.solv_cube_set[solv] = cube
-            self.solv_margin_set[solv] = margin
-        return (self.poly_cube_set[poly].todense(),
-                self.poly_margin_set[poly]), \
-               (self.solv_cube_set[solv].todense(),
-                self.solv_margin_set[solv])
+            self.solv_cube_set[solv] = \
+                self._load_cube_conditional(f'{solv}.npy')
+        if self.store_sparse:
+            return (self.poly_cube_set[poly].todense(),
+                    self.solv_cube_set[solv].todense())
+        else:
+            return (self.poly_cube_set[poly],
+                    self.solv_cube_set[solv])
 
-    def _augment_cube(self, cube, margins):
-        cube_shift = [random.randint(*i) for i in margins]
+    def _rotate_cube(self, cube):
         cube_rot = [random.random() * 360 for i in range(3)]
-        cube_copy = np.copy(cube).astype(np.float32)
+        cube_copy = np.copy(cube)
         for i in range(2):
             for angle, axes in zip(cube_rot, [(1, 0), (2, 0), (2, 1)]):
                 cube_copy[:, :, :, i] = \
                     rotate(cube_copy[:, :, :, i], angle, axes=axes,
                            reshape=False, order=3, cval=0.0, prefilter=False)
-            cube_copy[:, :, :, i] = shift(cube_copy[:, :, :, i], cube_shift,
-                                          cval=0, prefilter=False, order=0)
-        return cube_copy.astype(self.load_precision)
+        return cube_copy
+
+    def _shift_cube(self, cube):
+        margins = [[0, 0], [0, 0], [0, 0]]
+        dim = cube.shape[0]
+        profiles = [[0 for i in range(dim)],
+                    [0 for i in range(dim)],
+                    [0 for i in range(dim)]]
+        for i in range(dim):
+            profiles[0][i] = cube[i, :, :, 0].sum()
+            profiles[1][i] = cube[:, i, :, 0].sum()
+            profiles[2][i] = cube[:, :, i, 0].sum()
+        for axis in range(3):
+            for i in range(dim):
+                if profiles[axis][i] != 0:
+                    margins[axis][0] = -i
+                    break
+            for i in range(dim):
+                if profiles[axis][dim - i - 1] != 0:
+                    margins[axis][1] = i
+                    break
+        cube_shift = [random.randint(*i) for i in margins]
+        cube_copy = np.copy(cube)
+        for i in range(2):
+            cube_copy[:, :, :, i] = \
+                np.roll(cube_copy[:, :, :, i], cube_shift, axis=(0, 1, 2))
+        return cube_copy
 
     def _form_index_tables(self,
                            poly_conf_num,
@@ -609,14 +606,15 @@ class DatasetFit(Dataset):
                        np.array(exp_slice.loc[self.features])), \
                     np.array(exp_slice.at['wa']).reshape((1,))
             else:
-                poly, solv = self._cube_from_df(table_slice, exp_slice)
+                poly_cube, solv_cube = \
+                    self._cube_from_df(table_slice, exp_slice)
                 if self.aug_onthefly:
-                    poly_cube = self._augment_cube(*poly)
-                    solv_cube = self._augment_cube(*solv)
-                else:
-                    poly_cube = poly[0]
-                    solv_cube = solv[0]
-                # TODO shift-rotate
+                    poly_cube = self._rotate_cube(poly_cube)
+                    solv_cube = self._rotate_cube(solv_cube)
+                    poly_cube = self._shift_cube(poly_cube)
+                    solv_cube = self._shift_cube(solv_cube)
+                    poly_cube = poly_cube.astype(self.load_precision)
+                    solv_cube = solv_cube.astype(self.load_precision)
                 yield (poly_cube, solv_cube,
                        np.array(exp_slice.loc[self.features])), \
                     np.array(exp_slice.at['wa']).reshape((1,))

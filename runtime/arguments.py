@@ -50,6 +50,9 @@ PARSER.add_argument('--store_density',
                     default='cache',
                     help="""Where to store density images""")
 
+PARSER.add_argument('--store_sparse', '--sparse', dest='store_sparse',
+                    action='store_true', help="""Compress images""")
+
 PARSER.add_argument('--log_dir',
                     type=str,
                     default='.',
@@ -287,6 +290,7 @@ def parse_args(flags):
         'to_pred_csv': flags.to_pred_csv,
         'api': flags.api,
         'store_density': flags.store_density,
+        'store_sparse': flags.store_sparse,
         'log_dir': flags.log_dir,
         'log_name': flags.log_name,
         'log_every': flags.log_every,
