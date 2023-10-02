@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from scipy.ndimage import rotate
+from scipy.ndimage import rotate, shift
 from model.params import scale_params, image_dim, macro_dim
 
 
@@ -175,7 +175,12 @@ class DatasetFit(Dataset):
         else:
             self.aug = params.augment
             self.store_sparse = params.store_sparse
+        if params.parallel_preproc:
+            self.parallel_preproc = params.parallel_preproc
+        else:
+            self.parallel_preproc = self._batch_size
         self.aug_onthefly = params.augment_onthefly
+        self.nonint_shift = params.nonint_shift
         self.fold = params.fold
         self.eval_split = params.eval_split
         self.eval_define = params.eval_define
@@ -238,6 +243,14 @@ class DatasetFit(Dataset):
         else:
             self.index_table_eval = self.index_table_eval. \
                 drop(['polymer', 'solvent'], axis=1)
+        self.sample_table = None
+        self.train_sample_size = self._index_table_chooser()
+        self.eval_sample_size = len(self.index_table_eval)
+        if 'error_analysis' in params.exec_mode:
+            self.analysis_sample_size = \
+                self.analysis_n if self.analysis_n else len(self.index_table)
+        else:
+            self.analysis_sample_size = 0
 
     def _load_experimental(self):
         """Load experimental data set to Pandas dataframe"""
@@ -412,11 +425,18 @@ class DatasetFit(Dataset):
                 if profiles[axis][dim - i - 1] != 0:
                     margins[axis][1] = i
                     break
-        cube_shift = [random.randint(*i) for i in margins]
         cube_copy = np.copy(cube)
-        for i in range(2):
-            cube_copy[:, :, :, i] = \
-                np.roll(cube_copy[:, :, :, i], cube_shift, axis=(0, 1, 2))
+        if self.nonint_shift:
+            cube_shift = [random.uniform(*i) for i in margins]
+            for i in range(2):
+                cube_copy[:, :, :, i] = \
+                    shift(cube_copy[:, :, :, i], cube_shift, cval=0,
+                          prefilter=False, order=3)
+        else:
+            cube_shift = [random.randint(*i) for i in margins]
+            for i in range(2):
+                cube_copy[:, :, :, i] = \
+                    np.roll(cube_copy[:, :, :, i], cube_shift, axis=(0, 1, 2))
         return cube_copy
 
     def _form_index_tables(self,
@@ -549,56 +569,65 @@ class DatasetFit(Dataset):
     def _index_table_chooser(self,
                              is_evaluation=False,
                              is_analysis=False,
-                             fold_no=None):
+                             fold_no=False,
+                             gen_id=0):
         """Choose appropriate index table and sample for training/evaluation"""
+        if gen_id:
+            return 0
         if is_analysis:
-            return self.index_table
+            if self.analysis_n:
+                self.sample_table = self.index_table.head(self.analysis_n)
+            else:
+                self.sample_table = self.index_table
         if is_evaluation:
             if self.fold:
-                sample_table = self. \
+                self.sample_table = self. \
                     _index_table_sampling(self.index_table_folds[fold_no])
             elif self.eval_split or self.eval_define:
-                return self.index_table_eval
+                self.sample_table = self.index_table_eval
             else:
                 raise RuntimeError('Generator error: fold/split not defined')
         elif self.fold:
-            sample_table = self. \
+            self.sample_table = self. \
                 _index_table_sampling(
                     pd.concat([df for i, df
                                in enumerate(self.index_table_folds)
-                               if i != fold_no])
-                                    )
+                               if i != fold_no]))
         elif self.eval_split or self.eval_define:
-            sample_table = self._index_table_sampling(self.index_table_train)
+            self.sample_table = \
+                self._index_table_sampling(self.index_table_train)
         else:
-            sample_table = self._index_table_sampling(self.index_table)
-        return sample_table
+            self.sample_table = self._index_table_sampling(self.index_table)
+        return len(self.sample_table)
 
     def set_generator(self,
                       is_evaluation=False,
                       is_analysis=False,
                       with_zeros=False,
-                      fold_no=None):
+                      fold_no=False,
+                      gen_id=0):
         """Combine experiment with related solvent/polymer electron density"""
-        sample_table = self._index_table_chooser(is_evaluation,
-                                                 is_analysis,
-                                                 fold_no)
-        sample_size = len(sample_table)
-
+        self._index_table_chooser(is_evaluation, is_analysis, fold_no, gen_id)
         if is_analysis:
-            if self.analysis_n:
-                sample_size = self.analysis_n
             if with_zeros:
                 log_name = f'full_table_zeros_{self.log_name}.csv'
             else:
                 log_name = f'full_table_{self.log_name}.csv'
             log_path = os.path.join(self.log_dir, log_name)
-            sample_table.head(sample_size).to_csv(log_path, index=False)
-        print(f'\nNumber of examples is {sample_size}\n')
+            self.sample_table.to_csv(log_path, index=False)
+        if is_analysis:
+            chunk_size = self.analysis_sample_size // self.parallel_preproc
+        elif is_evaluation:
+            chunk_size = self.eval_sample_size // self.parallel_preproc
+        else:
+            chunk_size = self.train_sample_size // self.parallel_preproc
 
-        for s in range(0, sample_size):
-            table_slice = sample_table.iloc[s]
+        for s in range(chunk_size * gen_id, chunk_size * (gen_id + 1)):
+            table_slice = self.sample_table.iloc[s]
             exp_slice = self.exp_set.loc[tuple(table_slice[['expno', 'cut']])]
+            # TODO debug DataFrame instead of Series occurencies
+            if isinstance(exp_slice, pd.DataFrame):
+                exp_slice = exp_slice.iloc[0]
 
             if is_analysis and with_zeros:
                 yield (np.zeros(self.image_dim, dtype=self.load_precision),
@@ -620,31 +649,29 @@ class DatasetFit(Dataset):
                     np.array(exp_slice.at['wa']).reshape((1,))
 
     def data_gen(self, is_evaluation=False, is_analysis=False,
-                 with_zeros=False, fold_no=None):
+                 with_zeros=False, fold_no=False):
         """Input function for training/evaluation"""
-
         if (not is_evaluation) or (self.fold or
                                    self.eval_split or
                                    self.eval_define):
-            dataset = tf. \
-                data. \
-                Dataset. \
-                from_generator(lambda: self.set_generator(is_evaluation,
-                                                          is_analysis,
-                                                          with_zeros,
-                                                          fold_no),
-                               output_signature=(
-                                   (self.cube_dim, self.cube_dim,
-                                    self.macr_dim),
-                                   self.labl_dim,
-                               )
-                               )
+            gen_ids = [i for i in range(self.parallel_preproc)]
+            dataset = tf.data.Dataset.from_tensor_slices(gen_ids)
+            dataset = dataset.interleave(
+                lambda gen_id: tf.data.Dataset.from_generator(
+                    self.set_generator,
+                    output_signature=((self.cube_dim,
+                                       self.cube_dim,
+                                       self.macr_dim), self.labl_dim,),
+                    args=(is_evaluation, is_analysis,
+                          with_zeros, fold_no, gen_id,)),
+                cycle_length=self.parallel_preproc,
+                block_length=1,
+                num_parallel_calls=self.parallel_preproc)
 
             dataset = dataset.batch(self._batch_size, drop_remainder=True)
             dataset = dataset.prefetch(self._batch_size)
         else:
             dataset = None
-
         return dataset
 
 

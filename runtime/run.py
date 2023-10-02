@@ -8,7 +8,7 @@ import tensorflow as tf
 import tensorflow_model_optimization as tfmot
 
 
-def train(params, model, dataset, logger, fold_no=None):
+def train(params, model, dataset, logger, fold_no=False):
     """Wrapper for RhNet training loop (with optional evaluation): define
     optimizer and checkpoint, run the chosen (builtin of custom) training loop
     and save the trained model
@@ -226,7 +226,7 @@ def train_builtin(params, model, dataset, optimizer, fold_no):
 
 
 def train_custom(params, model, dataset, optimizer, checkpoint,
-                 logger, fold_no=None):
+                 logger, fold_no=False):
     """Custom training loop with optional evaluation
 
     Args:

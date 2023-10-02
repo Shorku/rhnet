@@ -53,6 +53,11 @@ PARSER.add_argument('--store_density',
 PARSER.add_argument('--store_sparse', '--sparse', dest='store_sparse',
                     action='store_true', help="""Compress images""")
 
+PARSER.add_argument('--parallel_preproc',
+                    type=int,
+                    default=0,
+                    help="""Perform preprocessing in parallel""")
+
 PARSER.add_argument('--log_dir',
                     type=str,
                     default='.',
@@ -136,6 +141,10 @@ PARSER.add_argument('--augment',
 PARSER.add_argument('--augment_onthefly', dest='augment_onthefly',
                     action='store_true',
                     help="""Shift and rotate images on the fly""")
+
+PARSER.add_argument('--nonint_shift', dest='nonint_shift',
+                    action='store_true',
+                    help="""Use non-integer steps shifting images """)
 
 PARSER.add_argument('--even_ratios_distrib', '--make_even', dest='make_even',
                     action='store_true', help="""Tune sampling weights
@@ -291,6 +300,7 @@ def parse_args(flags):
         'api': flags.api,
         'store_density': flags.store_density,
         'store_sparse': flags.store_sparse,
+        'parallel_preproc': flags.parallel_preproc,
         'log_dir': flags.log_dir,
         'log_name': flags.log_name,
         'log_every': flags.log_every,
@@ -312,6 +322,7 @@ def parse_args(flags):
         # Data related parameters
         'augment': flags.augment,
         'augment_onthefly': flags.augment_onthefly,
+        'nonint_shift': flags.nonint_shift,
         'make_even': flags.make_even,
         'analysis_n': flags.analysis_n,
         # Evaluation split parameters
