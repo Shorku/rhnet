@@ -194,6 +194,11 @@ class DatasetFit(Dataset):
         self.index_table, \
             self.exp_set = self._form_index_tables(poly_conf_num,
                                                    solv_conf_num)
+        # Load electron density
+        if self.store_density == 'ram':
+            self._load_cubes()
+        elif self.store_density == 'file':
+            self.store_sparse = False
         # Get sampling number for a single experiment
         self.exp_mapper = self._get_exp_sampling(self.exp_set)
         self.exp_set = self.exp_set.set_index(['expno', 'cut'])
@@ -218,11 +223,6 @@ class DatasetFit(Dataset):
             if 'error_analysis' not in params.exec_mode:
                 del self.index_table
                 gc.collect()
-        # Load electron density
-        if self.store_density == 'ram':
-            self._load_cubes()
-        elif self.store_density == 'file':
-            self.store_sparse = False
         # Drop some columns from index tables to save some memory
         try:
             self.index_table
@@ -357,6 +357,7 @@ class DatasetFit(Dataset):
                 cube = self._load_cube_dense(name)
         return cube
 
+    # TODO make it load only required images
     def _load_cubes(self):
         """Load electron density into RAM"""
         compound_set = {'p': self.index_table['polymer'].unique(),
