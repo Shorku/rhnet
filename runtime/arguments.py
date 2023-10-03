@@ -149,7 +149,7 @@ PARSER.add_argument('--augment_onthefly', dest='augment_onthefly',
 
 PARSER.add_argument('--nonint_shift', dest='nonint_shift',
                     action='store_true',
-                    help="""Use non-integer steps shifting images """)
+                    help="""Use non-integer steps shifting images""")
 
 PARSER.add_argument('--even_ratios_distrib', '--make_even', dest='make_even',
                     action='store_true', help="""Tune sampling weights

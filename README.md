@@ -404,7 +404,15 @@ polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
    * `file`: loads images during training/evaluation from disk every time. 
     Reduces RAM demands but creates I/O bottleneck
    * `cache`: loads images during training/evaluation from disk, but store 
-    already loaded images in RAM for all subsequent usages 
+    already loaded images in RAM for all subsequent usages
+* `--store_sparse`: Compress images stored in RAM using their sparsity. Saves 
+    memory but adds compression-decompression overhead. DEFAULT: `False`.
+* `--parallel_preproc`: Perform assembly and augmentation of training examples
+    in multiple CPU-threads. If set to 0 will settle to a number of threads 
+    equal to `batch_size`.  DEFAULT: `0`.
+* `--timeout`: Introduce a delay (in seconds) between data generators 
+    initialization and the first generators' calls to syncronize their state
+    at the epoch start. DEFAULT: `10`. 
 * `--log_dir`: The directory to store logs. DEFAULT: `.`.
 * `--log_name`: Suffix for different log files. DEFAULT: `None`.
 * `--log_every`: Log performance every ... steps (for dllogger and custom 
@@ -449,7 +457,13 @@ DEFAULT: `False`.
 
 * `--augment`: Tells the script, how many augmented (shifted and rotated) 
     electron densities images are available for each molecular geometry. 
-    Augmentation itself is done elswhere. DEFAULT: `25`.
+    Augmentation itself is done elsewhere. DEFAULT: `25`.
+* `--augment_onthefly`: Perform image augmentation (random shift and rotation) 
+    on-the-fly in parallel to training. Computationally heavy. DEFAULT: `False`.
+* `--nonint_shift`: In conjunction with `augment_onthefly` will result in 
+    images shift  by integer steps (if set to `False`) or non-integer steps
+    (if set to `True`). Non-integer steps involve interpolation and are 
+    computationally heavier. DEFAULT: `False`.
 * `--make_even`: Try to tune sampling weights to equalize impacts of the 
     examples with medium and high solvent content assuming normal distribution
 * `--analysis_n`: Loop only through the first `n` examples of the dataset 
@@ -537,13 +551,16 @@ The following example output is printed when running the model:
 usage: main.py [-h] [--exec_mode {train,evaluate,predict,error_analysis,train_and_error_analysis}] 
                [--model_dir MODEL_DIR] [--data_dir DATA_DIR] [--data_csv DATA_CSV]
                [--to_pred_csv TO_PRED_CSV] [--api {builtin,custom}] 
-               [--store_density {ram,file,cache}] [--log_dir LOG_DIR] [--log_name LOG_NAME]
-               [--log_every LOG_EVERY] [--use_amp] [--use_xla] [--model MODEL] 
+               [--store_density {ram,file,cache}] [--store_sparse STORE_SPARSE] 
+               [--parallel_preproc PARALLEL_PREPROC] [--timeout TIMEOUT] 
+               [--log_dir LOG_DIR] [--log_name LOG_NAME] [--log_every LOG_EVERY] 
+               [--use_amp] [--use_xla] [--model MODEL] 
                [--activation {relu,sigmoid,tanh,leaky_relu,elu}] 
                [--pooling {av,max}] [--save_model] [--resume_training] 
                [--load_model] [--use_only_mw] [--use_only_amorph] [--use_tg]
                [--use_dens] [--use_solvent_boil_temp] [--use_solvent_cryt_point] 
-               [--augment AUGMENT] [--even_ratios_distrib] [--analysis_n ANALYSIS_N] 
+               [--augment AUGMENT] [--augment_onthefly AUGMENT_ONTHEFLY] [--nonint_shift NONINT_SHIFT]
+               [--even_ratios_distrib] [--analysis_n ANALYSIS_N] 
                [--eval_split EVAL_SPLIT] [--eval_define EVAL_DEFINE] [--fold FOLD]
                [--holdout_define HOLDOUT_DEFINE] [--restrict_to_define RESTRICT_TO_DEFINE]
                [--batch_size BATCH_SIZE] [--learning_rate LEARNING_RATE] 
@@ -572,6 +589,11 @@ optional arguments:
                         Whether to use Keras builtin or custom training loop
   --store_density {ram,file,cache}
                         Where to store density images
+  --store_sparse STORE_SPARSE
+                        Compress images
+  --parallel_preproc PARALLEL_PREPROC
+                        Perform preprocessing in parallel
+  --timeout TIMEOUT     Delay (sec) to sync data generators init
   --log_dir LOG_DIR     Output directory for training logs
   --log_name LOG_NAME   Suffix for different log files
   --log_every LOG_EVERY
@@ -597,6 +619,10 @@ optional arguments:
   --augment AUGMENT     Number of shifted and rotated densities per geometry. 
                         Note: the option affects only indexing, augmentation 
                         itself is done elsewhere
+  --augment_onthefly AUGMENT_ONTHEFLY
+                        Shift and rotate images on the fly
+  --nonint_shift NONINT_SHIFT
+                        Use non-integer steps shifting images
   --even_ratios_distrib, --make_even
                         Tune sampling weights to equalize impacts of the 
                         examples with medium and high solvent content
@@ -906,7 +932,7 @@ optional arguments:
 - [ ] compactize model definition code
 - [ ] refactor stuff triggering SettingWithCopyWarning
 ### Further development
-- [ ] on-the-fly translational and rotational augmentation
+- [x] on-the-fly translational and rotational augmentation
 - [ ] sparse convolutions
 ### Misc minor stuff
 - [ ] unify feature selection
