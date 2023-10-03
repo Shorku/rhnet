@@ -181,7 +181,7 @@ class DatasetFit(Dataset):
         else:
             self.parallel_preproc = self._batch_size
         self.aug_onthefly = params.augment_onthefly
-        self.timeout = params.timeout,
+        self.timeout = params.timeout
         self.nonint_shift = params.nonint_shift
         self.fold = params.fold
         self.eval_split = params.eval_split
