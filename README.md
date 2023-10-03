@@ -551,7 +551,7 @@ The following example output is printed when running the model:
 usage: main.py [-h] [--exec_mode {train,evaluate,predict,error_analysis,train_and_error_analysis}] 
                [--model_dir MODEL_DIR] [--data_dir DATA_DIR] [--data_csv DATA_CSV]
                [--to_pred_csv TO_PRED_CSV] [--api {builtin,custom}] 
-               [--store_density {ram,file,cache}] [--store_sparse STORE_SPARSE] 
+               [--store_density {ram,file,cache}] [--store_sparse] 
                [--parallel_preproc PARALLEL_PREPROC] [--timeout TIMEOUT] 
                [--log_dir LOG_DIR] [--log_name LOG_NAME] [--log_every LOG_EVERY] 
                [--use_amp] [--use_xla] [--model MODEL] 
@@ -559,7 +559,7 @@ usage: main.py [-h] [--exec_mode {train,evaluate,predict,error_analysis,train_an
                [--pooling {av,max}] [--save_model] [--resume_training] 
                [--load_model] [--use_only_mw] [--use_only_amorph] [--use_tg]
                [--use_dens] [--use_solvent_boil_temp] [--use_solvent_cryt_point] 
-               [--augment AUGMENT] [--augment_onthefly AUGMENT_ONTHEFLY] [--nonint_shift NONINT_SHIFT]
+               [--augment AUGMENT] [--augment_onthefly] [--nonint_shift]
                [--even_ratios_distrib] [--analysis_n ANALYSIS_N] 
                [--eval_split EVAL_SPLIT] [--eval_define EVAL_DEFINE] [--fold FOLD]
                [--holdout_define HOLDOUT_DEFINE] [--restrict_to_define RESTRICT_TO_DEFINE]
@@ -589,8 +589,7 @@ optional arguments:
                         Whether to use Keras builtin or custom training loop
   --store_density {ram,file,cache}
                         Where to store density images
-  --store_sparse STORE_SPARSE
-                        Compress images
+  --store_sparse        Compress images
   --parallel_preproc PARALLEL_PREPROC
                         Perform preprocessing in parallel
   --timeout TIMEOUT     Delay (sec) to sync data generators init
@@ -619,10 +618,8 @@ optional arguments:
   --augment AUGMENT     Number of shifted and rotated densities per geometry. 
                         Note: the option affects only indexing, augmentation 
                         itself is done elsewhere
-  --augment_onthefly AUGMENT_ONTHEFLY
-                        Shift and rotate images on the fly
-  --nonint_shift NONINT_SHIFT
-                        Use non-integer steps shifting images
+  --augment_onthefly    Shift and rotate images on the fly
+  --nonint_shift        Use non-integer steps shifting images
   --even_ratios_distrib, --make_even
                         Tune sampling weights to equalize impacts of the 
                         examples with medium and high solvent content
