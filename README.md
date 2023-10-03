@@ -192,6 +192,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 ### Run
 
 1. Inference
+
    ```bash
    python3 main.py --load_model --exec_mode predict --data_dir dataset_folder_path --model_dir model_folder_path --log_dir logs_folder_path --log_name logfile_name --use_only_mw --use_only_amorph --augment 1 --batch_size 32
    ```

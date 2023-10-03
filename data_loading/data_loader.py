@@ -3,6 +3,7 @@
 import gc
 import os
 import ast
+import time
 import sparse
 import random
 
@@ -180,6 +181,7 @@ class DatasetFit(Dataset):
         else:
             self.parallel_preproc = self._batch_size
         self.aug_onthefly = params.augment_onthefly
+        self.timeout = params.timeout,
         self.nonint_shift = params.nonint_shift
         self.fold = params.fold
         self.eval_split = params.eval_split
@@ -621,14 +623,14 @@ class DatasetFit(Dataset):
             chunk_size = self.eval_sample_size // self.parallel_preproc
         else:
             chunk_size = self.train_sample_size // self.parallel_preproc
-
+        if gen_id:
+            time.sleep(self.timeout)
         for s in range(chunk_size * gen_id, chunk_size * (gen_id + 1)):
             table_slice = self.sample_table.iloc[s]
             exp_slice = self.exp_set.loc[tuple(table_slice[['expno', 'cut']])]
             # TODO debug DataFrame instead of Series occurencies
             if isinstance(exp_slice, pd.DataFrame):
                 exp_slice = exp_slice.iloc[0]
-
             if is_analysis and with_zeros:
                 yield (np.zeros(self.image_dim, dtype=self.load_precision),
                        np.zeros(self.image_dim, dtype=self.load_precision),
