@@ -587,7 +587,8 @@ class DatasetFit(Dataset):
                 self.sample_table = self. \
                     _index_table_sampling(self.index_table_folds[fold_no])
             elif self.eval_split or self.eval_define:
-                self.sample_table = self.index_table_eval
+                # self.sample_table = self.index_table_eval
+                pass
             else:
                 raise RuntimeError('Generator error: fold/split not defined')
         elif self.fold:
@@ -611,7 +612,7 @@ class DatasetFit(Dataset):
                       gen_id=0):
         """Combine experiment with related solvent/polymer electron density"""
         self._index_table_chooser(is_evaluation, is_analysis, fold_no, gen_id)
-        if is_analysis:
+        if is_analysis and gen_id == 0:
             if with_zeros:
                 log_name = f'full_table_zeros_{self.log_name}.csv'
             else:
@@ -627,7 +628,10 @@ class DatasetFit(Dataset):
         if gen_id:
             time.sleep(self.timeout)
         for s in range(chunk_size * gen_id, chunk_size * (gen_id + 1)):
-            table_slice = self.sample_table.iloc[s]
+            if is_evaluation and not fold_no:
+                table_slice = self.index_table_eval.iloc[s]
+            else:
+                table_slice = self.sample_table.iloc[s]
             exp_slice = self.exp_set.loc[tuple(table_slice[['expno', 'cut']])]
             # TODO debug DataFrame instead of Series occurencies
             if isinstance(exp_slice, pd.DataFrame):
