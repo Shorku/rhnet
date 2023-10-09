@@ -67,7 +67,7 @@ you find the model or the dataset useful please cite:
 
 Gromov, O.I. Predicting the Solubility of Gases, Vapors, and Supercritical 
 Fluids in Amorphous Polymers from Electron Density using Convolutional Neural
-Networks, ChemRxiv, 2023, 10.26434/chemrxiv-2023-tqv4p-v3
+Networks, ChemRxiv, 2023, 10.26434/chemrxiv-2023-tqv4p-v4
 
 
 
@@ -118,51 +118,36 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 
 3. Download or generate the data
 
-   Pre-trained model (multikernel option) can be downloaded from a [separate 
-   repository](https://github.com/Shorku/rhnet_models/raw/main/multikernel.tar.xz) (18,5 MB)
-      
-   `rhnet/data` folder contains experimental data and other necessary
-   tables for the RhNet to perform training and inference. The only exception
-   are the electron densities, which can be downloaded elsewhere:
- 
-   [Density images used to train the current model](https://www.dropbox.com/s/w84cqv9z0vl4f0y/density_npy.tar.xz?dl=0) (28,6 GB)
- 
-   [Density images used to train the current model (unshifted)](https://www.dropbox.com/s/bavwbo78h3ay7ld/density.tar.xz?dl=0) (1,1 GB)  
-
+   * Pre-trained model (multikernel option) can be downloaded from 
+   a [separate repository](https://github.com/Shorku/rhnet_models/raw/main/multikernel.tar.xz) 
+   (18,5 MB)
+   * Experimental data and other necessary tables for the RhNet to perform 
+   training and inference are in the `rhnet/data` folder. The only exception
+   are the electron densities. 
+   * Electron density images should be either calculated and formatted as 
+   described in [Electron density generation](#electron-density-generation) 
+   section or downloaded elsewhere: 
+   [Density images used to train the current model](https://www.dropbox.com/s/w84cqv9z0vl4f0y/density_npy.tar.xz?dl=0) (28,6 GB), 
+   [Density images used to train the current model (unshifted)](https://www.dropbox.com/s/bavwbo78h3ay7ld/density.tar.xz?dl=0) (1,1 GB), 
    [Full example of the data folder for inference](https://github.com/Shorku/rhnet_models/raw/main/test_data.tar.xz)
 
-   To perform **both training and inference** the script expects the dataset
+   * To perform **both training and inference** the script expects the dataset
    folder to contain the following files:
-
-   `polymer_mass.csv` (suitable for training and prediction)
-
-   `solvent_mass.csv` (suitable for training and prediction)
-
-   and `cubes` folder with the electron density images
-
-   optionally if the model is intended to use solvent macroparameters:
-
-   `solvent_macro_features.csv` (suitable for training and prediction)
-
-   To perform **inference** the script also expects the dataset folder 
+     * `polymer_mass.csv` (required for training and prediction)
+     * `solvent_mass.csv` (required for training and prediction)
+     * `cubes` folder with the electron density images
+   * optionally if the model is intended to use solvent macroparameters:
+     * `solvent_macro_features.csv` (optional for training and prediction)
+   * To perform **inference** the script also expects the dataset folder 
    to contain the following file:
-
-   `to_predict_ranges.csv` (example suitable for inference)
-
-   To perform **training** the script also expects the dataset folder 
+     * `to_predict_ranges.csv` (required for inference)
+   * To perform **training** the script also expects the dataset folder 
    to contain the following files:
-
-   `experimental_dataset.csv` (suitable for training)
-
-   `polymers.txt` (suitable for training)
-
-   `solvents.txt` (suitable for training)
-
-   For an in-depth description of the dataset structure refer to 
+     * `experimental_dataset.csv` (required for training)
+     * `polymers.txt` (required for training)
+     * `solvents.txt` (required for training)
+   * For an in-depth description of the dataset structure refer to 
    [Dataset structure](#dataset-structure) section.
-
-   For a custom dataset generation procedure refer to 
-   [Electron density generation](#electron-density-generation) section.   
 
    
 4. Start the NGC container in the interactive mode
@@ -174,14 +159,16 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    sudo docker run --runtime=nvidia -it --shm-size=<available_RAM>g --ulimit memlock=-1 --gpus all --rm --ipc=host -v local_dataset_folder_path:dataset_folder_path -v local_model_folder_path:model_folder_path -v local_logs_folder_path:logs_folder_path rhnet /bin/bash
    ```
   
-   This command will launch the container and mount the 
-   `local_dataset_folder_path` directory containing quantum-chemical data as a 
-   volume to the `dataset_folder_path` directory inside the container, 
-   `local_model_folder_path` directory, containing a pre-trained model or 
-   checkpoints to the `model_folder_path` directory in the container, and 
-   `local_logs_folder_path` directory containing log-files to the
-   `logs_folder_path` directory inside the container. These will be accessible
-   both from the host and docker container.
+   This command will launch the container and mount necessary folders: 
+   * `local_dataset_folder_path` directory containing table and 
+   quantum-chemical data as a volume to the `dataset_folder_path` directory 
+   inside the container 
+   * `local_model_folder_path` directory, containing a pre-trained model or 
+   checkpoints to the `model_folder_path` directory in the container.  
+   * `local_logs_folder_path` directory containing log-files to the
+   `logs_folder_path` directory inside the container. 
+   
+   These will be accessible both from the host and docker container.
 
    **Note**, *`--shm-size=100g` for example will share 100 GiB between the host
    and your docker container: pnet preloads the quantum chemical data to the 
@@ -274,9 +261,15 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    polymer-solvent pairs will have equal shares within the sampled set, while 
    all experimental points will also have equal shares within their 
    polymer-solvent pairs share. 
-   * Augmentation is computationally heavy and is done by a separate script 
-   outside the training procedure. On-the-fly augmentation is to be implemented
-   later. 
+   * Augmentation (shift and rotation of the images) is computationally heavy 
+   and by default is supposed to be done by a separate script outside the 
+   training procedure. The number of available pre-shifted images should be
+   defined by `--augment` option. On-the-fly augmentation is turned on using
+   `--augment_onthefly`. With on-the-fly augmentation the RhNet script will
+   randomly shift and rotate each image each time while prefetching the next 
+   batch of the data. This will create a bottleneck which could be to some 
+   extent mitigated using parallel execution of data generator (defined by
+   `--parallel_preproc` keyword)
 
  
 3. Training with validation.
@@ -459,11 +452,16 @@ DEFAULT: `False`.
     electron densities images are available for each molecular geometry. 
     Augmentation itself is done elsewhere. DEFAULT: `25`.
 * `--augment_onthefly`: Perform image augmentation (random shift and rotation) 
-    on-the-fly in parallel to training. Computationally heavy. DEFAULT: `False`.
+    on-the-fly in parallel to training. Computationally heavy. It will 
+    automatically set `--augment` to `1` and read (and store) only one image 
+    per chemical structure/conformation. For example, only 
+    `p_{index}_{index}_{index}_1.npy` will be loaded and shifted/rotated, while 
+    any other `p_{index}_{index}_{index}_{index}.npy` will be ignored. 
+    DEFAULT: `False`.
 * `--nonint_shift`: In conjunction with `augment_onthefly` will result in 
-    images shift  by integer steps (if set to `False`) or non-integer steps
-    (if set to `True`). Non-integer steps involve interpolation and are 
-    computationally heavier. DEFAULT: `False`.
+    images shift by non-integer (in voxels) steps (if set to `True`). 
+    Otherwise, only integer steps will be performed. Non-integer steps involve 
+    interpolation and are computationally heavier. DEFAULT: `False`.
 * `--make_even`: Try to tune sampling weights to equalize impacts of the 
     examples with medium and high solvent content assuming normal distribution
 * `--analysis_n`: Loop only through the first `n` examples of the dataset 
@@ -680,68 +678,145 @@ optional arguments:
 ### Dataset overview
 The `data/` folder contains the current version of the dataset. It includes
 following files:
-
-
-`data/experimental_dataset.csv`
-
-
-`data/list_of_polymers.csv` matches the names of polymers and their ID numbers
+* `data/experimental_dataset.csv`
+* `data/list_of_polymers.csv` matches the names of polymers and their ID numbers
 in the dataset
-
-
-`data/list_of_solvents.csv` matches the names of solvents and their ID numbers
+* `data/list_of_solvents.csv` matches the names of solvents and their ID numbers
 in the dataset
-
-
-`data/geometries.tar.xz` archive provides **geometries of solvents and 
+* `data/geometries.tar.xz` archive provides **geometries of solvents and 
 polymers'** repeating units (in `XYZ` format) which were used to calculate 
 electron densities. Filenames in the archive use the following convention:
-* Filenames contain four indexes separated by `_`
-* The first index is a letter: either `p`(olymer) or `s`(olvent)
-* Second index is an ID number of polymer specified in 
+  * Filenames contain four indexes separated by `_`
+  * The first index is a letter: either `p`(olymer) or `s`(olvent)
+  * Second index is an ID number of polymer specified in 
 `data/list_of_polymers.csv` or solvent specified in `data/list_of_solvents.csv`
-* Third index if for the choice of a particular repeating unit of a polymer
+  * Third index if for the choice of a particular repeating unit of a polymer
 and is always 1 for solvents.
-* Fourth index enumerates conformational isomers 
-
-For example `p_3_2_1.xyz` will contain geometry of:
-* polymer, as it starts with `p`
-* polyethylene (-CH<sub>2</sub>CH<sub>2</sub>-)<sub>n</sub> which is defined by
-index `3`
-* -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
+  * Fourth index enumerates conformational isomers 
+  * For example `p_3_2_1.xyz` will contain geometry of:
+    * polymer, as it starts with `p`
+    * polyethylene (-CH<sub>2</sub>CH<sub>2</sub>-)<sub>n</sub> which is defined 
+by index `3`
+    * -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
 defined by index `2`
-* conformational isomer of the 
+    * conformational isomer of the 
 -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
 number `1`
-
-
-`data/smiles.tar.xz` archive contains polymers' repeating units and solvents
+* `data/smiles.tar.xz` archive contains polymers' repeating units and solvents
 in SMILES format. It is provided within the dataset to simplify its use in 
 fitting of models with other than electron density molecular representations. 
 Dangling bonds in polymers' repeating units are caped with Fr-atoms. Filenames 
 in the archive use the following convention:
-* Filenames contain two indexes separated by `_`
-* The first index is a letter: either `p`(olymer) or `s`(olvent)
-* Second index is an ID number of polymer specified in 
+  * Filenames contain two indexes separated by `_`
+  * The first index is a letter: either `p`(olymer) or `s`(olvent)
+  * Second index is an ID number of polymer specified in 
 `data/list_of_polymers.csv` or solvent specified in `data/list_of_solvents.csv`
+* `data/polymers.txt` contains python dictionary defining the number of
+available conformations for each polymer repeating unit (called "cut" in the 
+code for shortness): 
+```bash
+{polymer_ID: [cut0_confs, cut1_confs...],
+ polymer_ID: [cut0_confs],
+ polymer_ID: [cut0_confs, cut1_confs, cut2_confs...],
+ ...}
+ 
+ For example:
+ 
+ {1:  [92], 
+  2:  [18, 40], 
+  3:  [3, 9], 
+  4:  [3, 20, 6],
+ ...}
+```
+* `data/polymer_mass.csv` defines the molar masses (g/mol) of the polymer 
+repeating units, repeating units' (cuts) indexing is 1-based:
+```bash
+polymer, cut, poly_mass
+polymer_ID, cut_ID, mass
+polymer_ID, cut_ID, mass
+...
 
+For example:
 
-`data/polymers.txt`
+polymer,cut,poly_mass
+1,1,552.61
+2,1,114.16
+...
+```
+* `data/solvents.txt` contains python dictionary defining the number of
+available conformations for each solvent: 
+```bash
+{solvent_ID: num_confs,
+ solvent_ID: num_confs,
+ ...}
+ 
+ For example:
+ 
+ {1:  1, 
+  2:  1, 
+  3:  3,
+ ...}
+```
+* `data/solvent_mass.csv` defines the molar masses (g/mol) of the solvents:
+```bash
+solvent, solv_mass
+solvent_ID, mass
+solvent_ID, mass
+...
 
+For example:
 
-`data/polymer_mass.csv`
+solvent,solv_mass
+45,74.09
+9,120.03
+...
+```
+* `data/solvent_macro_features.csv` defines solvent macroscopic features 
+(optional):
+```bash
+solvent,bt,ct,cp
+solvent_ID, boiling temp(K), critical temp(K), critical pressure(MPa)
+solvent_ID, boiling temp(K), critical temp(K), critical pressure(MPa)
+...
 
+For example:
 
-`data/solvent_mass.csv`
+solvent,bt,ct,cp
+1,194.7,304.1,7.38
+2,111.6,190.6,4.6
+...
+```
+* `data/val_pairs.csv` defines the polymer-solvent pairs to be excluded from the 
+training set and to be included in the validation set for the training-time 
+evaluation.
+```bash
+polymer,solvent
+polymer_ID, solvent_ID
+polymer_ID, solvent_ID
+...
 
+For example:
 
-`data/solvent_macro_features.csv`
+polymer,solvent
+25,10
+19,45
+...
+```
+* `data/test_pairs.csv` defines the polymer-solvent pairs to be excluded from the 
+training and validation sets and used for the after-training test evaluation.
+```bash
+polymer,solvent
+polymer_ID, solvent_ID
+polymer_ID, solvent_ID
+...
 
+For example:
 
-`data/val_pairs.csv`
-
-
-`data/test_pairs.csv`
+polymer,solvent
+13,1
+24,1
+...
+```
 
 ### Training example assembly
 
