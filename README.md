@@ -363,7 +363,7 @@ Following is a list of the available parameters for the `main.py` script:
 * `--exec_mode`: The execution mode of the script:
   * `train`: (DEFAULT) trains model.
   * `evaluate`: performs evaluation on the validation subset.
-  * `predict`: loads checkpoint and runs inference (***is not implemented***).
+  * `predict`: loads model or checkpoint and runs inference.
     Predictions will be saved to {--log_dir}/prediction_{--log_name}.csv.
   * `error_analysis`: performs evaluation on the whole dataset and save the 
     whole augmented dataset (without images but their indexes) to 
