@@ -22,7 +22,7 @@ polymer using a pre-calculated distribution of the electron density.
    * [Command-line options](#command-line-options)
 - [Dataset structure](#dataset-structure)
    * [Dataset overview](#dataset-overview)
-   * [Training example assembly](#training-example-assembly)
+   * [Example assembly](#example-assembly)
    * [Dataset for inference](#dataset-for-inference)
    * [Dataset for training](#dataset-for-training)
 - [Electron density generation](#electron-density-generation)
@@ -818,9 +818,64 @@ polymer,solvent
 ...
 ```
 
-### Training example assembly
+### Example assembly
 
 ![RhNet_xyexample](images/xyexample.png)
+
+A single example consists of two images: polymer repeating units density and 
+solvent density, and a vector (table row) of macroscopic features such as 
+pressure, temperature or polymers molar mass.
+
+The density images have two channels: electron density and spin density 
+channels. Spin density channels are used mostly to represent position and
+orientation of the polymer repeating units' dangling bonds, which connect them
+to the other repeating units in a real polymer. 
+
+Available macroscopic features are (listed in the order they are expected by
+the model):
+```python
+features = ['mn', # polymer number average molar weight
+            'mw', # polymer weight average molar weight
+            'cryst', # polymer crystallinity degree
+            'pressure', # experimental pressure
+            'temperature', # experimental temperature
+            'tg', # polymer glass transition temperature
+            'dens', # polymer density
+            'bt', # solvent boiling temperature
+            'ct', # solvent critical temperature
+            'cp' # solvent critical pressure
+            ]
+```
+The current model input signature is as follows:
+```python
+import tensorflow as tf
+
+fit_input_signature= \
+    ((tf.TensorSpec(shape=(img_dim,                # polymer electron/spin 
+                           img_dim,                # density image 
+                           img_dim, 2),
+                    dtype=tf.float16),
+      tf.TensorSpec(shape=(img_dim,                # solvent electron/spin 
+                           img_dim,                # density image 
+                           img_dim, 2),
+                    dype=tf.float16),
+      tf.TensorSpec(shape=(macro_feature_number,), # polymer/solvent macro
+                    dtype=tf.float16)),            # features
+     tf.TensorSpec(shape=(1,),                     # value to be predicted   
+                   dtype=tf.float16),)
+
+inference_input_signature= \
+    ((tf.TensorSpec(shape=(img_dim,                # polymer electron/spin 
+                           img_dim,                # density image 
+                           img_dim, 2),
+                    dtype=tf.float16),
+      tf.TensorSpec(shape=(img_dim,                # solvent electron/spin 
+                           img_dim,                # density image 
+                           img_dim, 2),
+                    dype=tf.float16),
+      tf.TensorSpec(shape=(macro_feature_number,), # polymer/solvent macro
+                    dtype=tf.float16),))           # features
+```
 
 
 ### Dataset for inference
