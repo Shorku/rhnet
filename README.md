@@ -539,7 +539,8 @@ polynomial decay schedule. DEFAULT: `None`.
 
 ### Command-line options 
 
-To see the full list of available options and their descriptions, use the `-h` or `--help` command-line option, for example:
+To see the full list of available options and their descriptions, use 
+the `-h` or `--help` command-line option, for example:
 ```bash
 python main.py --help
 ```
@@ -822,31 +823,35 @@ polymer,solvent
 
 ![RhNet_xyexample](images/xyexample.png)
 
-A single example consists of two images: polymer repeating units density and 
-solvent density, and a vector (table row) of macroscopic features such as 
-pressure, temperature or polymers molar mass.
+A single example consists of two images: polymer repeating unit's density and 
+solvent's density, and a vector (table row) of macroscopic features such as 
+pressure, temperature, polymers molar mass, etc.
 
 The density images have two channels: electron density and spin density 
 channels. Spin density channels are used mostly to represent position and
 orientation of the polymer repeating units' dangling bonds, which connect them
 to the other repeating units in a real polymer. 
 
-Available macroscopic features are (listed in the order they are expected by
-the model):
+Available macroscopic features (listed in the order they are expected by
+the model) are:
 ```python
-features = ['mn', # polymer number average molar weight
-            'mw', # polymer weight average molar weight
-            'cryst', # polymer crystallinity degree
-            'pressure', # experimental pressure
+features = ['mn',          # polymer number average molar weight
+            'mw',          # polymer weight average molar weight
+            'cryst',       # polymer crystallinity degree
+            'pressure',    # experimental pressure
             'temperature', # experimental temperature
-            'tg', # polymer glass transition temperature
-            'dens', # polymer density
-            'bt', # solvent boiling temperature
-            'ct', # solvent critical temperature
-            'cp' # solvent critical pressure
+            'tg',          # polymer glass transition temperature
+            'dens',        # polymer density
+            'bt',          # solvent boiling temperature
+            'ct',          # solvent critical temperature
+            'cp'           # solvent critical pressure
             ]
 ```
-The current model input signature is as follows:
+Some of the features can be omitted using command line arguments 
+(see [Advanced](#advanced) section). The current version of the pre-trained 
+model uses `['mw', 'pressure', 'temperature']` set of features.
+
+The model's **input signature** is as follows:
 ```python
 import tensorflow as tf
 
@@ -854,28 +859,31 @@ fit_input_signature= \
     ((tf.TensorSpec(shape=(img_dim,                # polymer electron/spin 
                            img_dim,                # density image 
                            img_dim, 2),
-                    dtype=tf.float16),
+                    dtype=precision),
       tf.TensorSpec(shape=(img_dim,                # solvent electron/spin 
                            img_dim,                # density image 
                            img_dim, 2),
-                    dype=tf.float16),
+                    dype=precision),
       tf.TensorSpec(shape=(macro_feature_number,), # polymer/solvent macro
-                    dtype=tf.float16)),            # features
+                    dtype=precision)),            # features
      tf.TensorSpec(shape=(1,),                     # value to be predicted   
-                   dtype=tf.float16),)
+                   dtype=precision),)
 
 inference_input_signature= \
     ((tf.TensorSpec(shape=(img_dim,                # polymer electron/spin 
                            img_dim,                # density image 
                            img_dim, 2),
-                    dtype=tf.float16),
+                    dtype=precision),
       tf.TensorSpec(shape=(img_dim,                # solvent electron/spin 
                            img_dim,                # density image 
                            img_dim, 2),
-                    dype=tf.float16),
+                    dype=precision),
       tf.TensorSpec(shape=(macro_feature_number,), # polymer/solvent macro
-                    dtype=tf.float16),))           # features
+                    dtype=precision),))           # features
 ```
+The current pre-trained model uses `img_dim = 80`, `macro_feature_number = 3`. 
+By default `precision = tf.float32`, if `--amp` key is invoked 
+`precision = tf.float16`. 
 
 
 ### Dataset for inference
