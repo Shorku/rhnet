@@ -106,7 +106,7 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 
    **Note**, *the quantum-chemical data may be really huge. Make sure there is 
    no  quantum-chemical data within the current folder while building rhnet 
-   image, otherwise it will be also copied.*
+   image, otherwise it will be also copied.* 
 
    **Note**, *Current models and related routines were prepared with 
    TensorFlow 2.5.0 which runs only with numpy<=1.21. On the other hand 
@@ -679,7 +679,22 @@ optional arguments:
 ### Dataset overview
 The `data/` folder contains the current version of the dataset. It includes
 following files:
-* `data/experimental_dataset.csv`
+* `data/experimental_dataset.csv`: the .csv file containing experimental 
+sorption data:
+```bash
+expno,polymer,solvent,mn,mw,cryst,tg,dens,pressure,temperature,wa,doi,notes
+1,1,11,18000,80000,0,593,1.2,0.002,283.5,0.08,"10.1021/ie3027873","Huntsman Advanced Materials"
+2,1,11,18000,80000,0,593,1.2,0.004,283.5,0.10,"10.1021/ie3027873","Huntsman Advanced Materials"
+...
+```
+* `data/to_predict_ranges.csv`: the (example) .csv file containing intended 
+for prediction parameters ranges:
+```bash
+polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
+1,1,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308.15,3
+1,10,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308.15,3
+...
+```
 * `data/list_of_polymers.csv` matches the names of polymers and their ID numbers
 in the dataset
 * `data/list_of_solvents.csv` matches the names of solvents and their ID numbers
@@ -828,7 +843,7 @@ solvent's density, and a vector (table row) of macroscopic features such as
 pressure, temperature, polymers molar mass, etc.
 
 The density images have two channels: electron density and spin density 
-channels. Spin density channels are used mostly to represent position and
+channels. Spin density channel is used mostly to represent position and
 orientation of the polymer repeating units' dangling bonds, which connect them
 to the other repeating units in a real polymer. 
 
@@ -887,7 +902,35 @@ By default `precision = tf.float32`, if `--amp` key is invoked
 
 
 ### Dataset for inference
+The `data/` folder should contain the following files:
+* `to_predict_ranges.csv`
+* `list_of_polymers.csv`
+* `list_of_solvents.csv`
+* `polymer_mass.csv`
+* `solvent_mass.csv`
+* `cubes` directory with density images
 
+For example, suppose the `to_predict_ranges.csv` file looks like:
+```bash
+polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
+13,1,29000,140000,0,243,1.2304,2,20,19,393.15,453.15,3
+```
+It will request calculation of absorption of a gas with ID number `1` in a
+polymer with ID number `13`:
+* `cubes` directory should contain polymer repeating unit density in `p_13.npy`
+file and solvent molecule density in `s_1.npy` file
+* Number average (`mn`) and weight average (`mw`) molar weights of the polymer
+are set to 29000 and 140000 respectively
+* Degree of crystallinity (`cryst`) is set to 0 (ignored in the current model)
+* Polymer glass transition temperature (`tg`) is set to 243 K (ignored in the 
+current model)
+* Polymer density (`dens`) is set to 1.2304 g/cm3 (ignored in the current 
+model)
+* The model will be applied to calculate `ntstep` isotherms with minimal 
+temperature `tmin` and maximal temperature `tmax`. In this example at 393.15 K,
+423.15 K, and 453.15 K.
+* Each isotherm will be calculated for pressures in range `pmin` - `pmax` with 
+`npstep` points: at 2 MPa, 3 MPa... 20 MPa
 
 ### Dataset for training
 
