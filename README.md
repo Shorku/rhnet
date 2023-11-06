@@ -900,7 +900,6 @@ The current pre-trained model uses `img_dim = 80`, `macro_feature_number = 3`.
 By default `precision = tf.float32`, if `--amp` key is invoked 
 `precision = tf.float16`. 
 
-
 ### Dataset for inference
 The `data/` folder should contain the following files:
 * `to_predict_ranges.csv`
@@ -945,76 +944,97 @@ The `data/` folder should contain the following files:
 Refer to [Dataset overview](#dataset-overview) section for details
 
 ## Electron density generation
-Repository contains a script to generate and augment 3D images of electron 
-density distribution in a format suitable for the RhNet model.
-
-_Section is under construction_
+Repository contains a script to generate and optionally augment 3D images of 
+electron density distribution in a format suitable for the RhNet model.
 
 ### qcdata_gen overview
-
- 
 The qcdata_gen script is intended to perform two main tasks:
 
 - generate quantum-chemical data for training
 - generate quantum-chemical data for inference
 
 The workflows in these cases differ. For a general description of training 
-data generation refer to the paper from [Reference](#reference) section 
-
+data generation refer to the paper from [Reference](#reference) section. 
 
 ### qcdata_gen requirements
- 
 To run the script one will need:
-- [ORCA](https://orcaforum.kofo.mpg.de/index.php) - An ab initio, DFT and 
+* [ORCA](https://orcaforum.kofo.mpg.de/index.php) - An ab initio, DFT and 
 semiempirical SCF-MO package
-- [RDKit](https://www.rdkit.org/)* - Open-Source Cheminformatics Software
-- [XTB](https://xtb-docs.readthedocs.io/en/latest/contents.html)* - 
+* [RDKit](https://www.rdkit.org/)* - Open-Source Cheminformatics Software
+* [XTB](https://xtb-docs.readthedocs.io/en/latest/contents.html)* - 
 Semiempirical Extended Tight-Binding Program Package
-- [conformers](http://limor1.nioch.nsc.ru/quant/program/conformers/)* - a 
+* [conformers](http://limor1.nioch.nsc.ru/quant/program/conformers/)* - a 
 standalone script for identical structures filtering
 
-   **Notes:**
-   * RDKit, XTB, and conformers are only needed for training dataset generation 
-
+**Notes:**
+* RDKit, XTB, and conformers are only needed for training dataset generation 
  
 ### qcdata_gen setup
-
- 
-   Download and install prerequisites:
+Download and install prerequisites:
 * Generation of both training and inference data requires [ORCA](https://orcaforum.kofo.mpg.de/index.php)
 package. ORCA is available as a ready-to-use binary package and doesn't require
 (for the time being) compilation and installation. For more details refer to 
-the official documentation or [other resources](https://sites.google.com/site/orcainputlibrary/setting-up-orca).
+the official documentation or 
+[other resources](https://sites.google.com/site/orcainputlibrary/setting-up-orca).
 There are two options for the script to locate ORCA executables. 
 Either ORCA path can be retrieved from $ORCA environmental variable, or it can
 be provided as a command-line option `--orca_path <orca_path>`
-     
+* [RDKit](https://www.rdkit.org/) is only needed to generate training examples.
+Here is RDKit installation example that worked for me (make sure to use your
+username, correct python path, and most recent RDKit version):
+```bash
+sudo apt install libboost-all-dev
+sudo apt install zlib1g-dev
+sudo apt install libfreetype6-dev libfreetype6
+sudo apt install libeigen3-dev
+sudo apt install cmake
+wget https://github.com/rdkit/rdkit/archive/Release_2021_03_1.tar.gz
+cd Release_2021_03_1/rdkit-Release_2021_03_1/
+mkdir build
+cd build
+export RDBASE=/home/username/Release_2021_03_1/rdkit-Release_2021_03_1
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/username/Release_2021_03_1/rdkit-Release_2021_03_1/lib
+cmake -D PYTHON_EXECUTABLE=/usr/bin/python3 -D RDK_INSTALL_INTREE=OFF -D CMAKE_INSTALL_PREFIX=/home/username/rdkit ..
+make -j 12
+make install
+ln -s /home/username/rdkit/lib/python3.8/site-packages/rdkit /home/username/.local/lib/python3.8/site-packages
+```
+* [XTB](https://xtb-docs.readthedocs.io/en/latest/contents.html) is only needed
+to generate training examples. For XTB setup instructions refer to the 
+[documentation](https://xtb-docs.readthedocs.io/en/latest/setup.html). Once 
+downloaded and compiled be sure to make it executable and move it to the ORCA
+directory:
+```bash
+chmod +x xtb
+mv xtb orca_path/otool_xtb
+```
+* [conformers](http://limor1.nioch.nsc.ru/quant/program/conformers/) script is 
+only needed to generate training examples. There are two options for the 
+qdata_gen script to locate conformers script. Either conformers path can be 
+retrieved from $CONFORMERS environmental variable, or it can be provided as a 
+command-line option `--conf_path <conf_path>`. Once downloaded make it 
+executable:
+```bash
+chmod +x conformers
+```
 
 ### qcdata_gen run for inference data
-
 The script can consume multiple `.xyz` files from the input directory, perform 
 single-point DFT calculations and convert resulting electron and spin-densities
 to `.npy` format suitable for the RhNet model. 
- 
-   ```bash
-   python3 qcdata_gen/main.py --exec_mode cube_to_predict --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --use_name_convention
-   ```
-   `--exec_mode cube_to_predict` will instruct the script to perform only 
+```bash
+python3 qcdata_gen/main.py --exec_mode cube_to_predict --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --use_name_convention
+```
+* `--exec_mode cube_to_predict` will instruct the script to perform only 
 single-point calculations on the user-supplied geometries. No shifts or 
 rotations will be applied to electron densities
-
-   `--use_name_convention` option suggests a structure with xyz-filename 
+* `--use_name_convention` option suggests a structure with xyz-filename 
 starting with: 's_' to be a solvent molecule and with 'p_' to be a polymer
 repeating unit with two dangling bonds
-
-   `<ncores>` number of CPU cores to use in DFT calculations
-
-   `<input_path>` a directory where the script will look for input `.xyz` files 
-
-   `<output_path>` a directory where temporary files and the results will be
+* `<ncores>` number of CPU cores to use in DFT calculations
+* `<input_path>` a directory where the script will look for input `.xyz` files 
+* `<output_path>` a directory where temporary files and the results will be
 stored
-
-
 
 ### qcdata_gen run for training data
 
