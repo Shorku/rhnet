@@ -62,7 +62,7 @@ verification models (see for example
 ## Reference
 
 The research paper with detailed description of the project is available 
-on-line at [ChemRxiv](https://doi.org/10.26434/chemrxiv-2023-tqv4p-v3). In case 
+on-line at [ChemRxiv](https://doi.org/10.26434/chemrxiv-2023-tqv4p-v4). In case 
 you find the model or the dataset useful please cite:
 
 Gromov, O.I. Predicting the Solubility of Gases, Vapors, and Supercritical 
@@ -933,15 +933,18 @@ temperature `tmin` and maximal temperature `tmax`. In this example at 393.15 K,
 `npstep` points: at 2 MPa, 3 MPa... 20 MPa
 
 ### Dataset for training
-
-
-
-
-
+The `data/` folder should contain the following files:
+* `experimental_dataset.csv`
+* `list_of_polymers.csv`
+* `list_of_solvents.csv`
+* `polymer_mass.csv`
+* `solvent_mass.csv`
+* `polymers.txt`
+* `solvents.txt`
+* `cubes` directory with density images
+Refer to [Dataset overview](###dataset-overview) section for details
 
 ## Electron density generation
-
-
 Repository contains a script to generate and augment 3D images of electron 
 density distribution in a format suitable for the RhNet model.
 
