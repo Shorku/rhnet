@@ -942,7 +942,7 @@ The `data/` folder should contain the following files:
 * `polymers.txt`
 * `solvents.txt`
 * `cubes` directory with density images
-Refer to [Dataset overview](###dataset-overview) section for details
+Refer to [Dataset overview](#dataset-overview) section for details
 
 ## Electron density generation
 Repository contains a script to generate and augment 3D images of electron 
