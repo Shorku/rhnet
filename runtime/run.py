@@ -40,7 +40,8 @@ def train(params, model, dataset, logger, fold_no=False):
     # Define checkpoint and read saved data if needed
     checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=model)
     if (not params.load_model) and params.resume_training:
-        checkpoint.restore(tf.train.latest_checkpoint(params.model_dir))
+        checkpoint.restore(tf.train.latest_checkpoint(params.model_dir)).\
+            expect_partial()
         model.load_weights(os.path.join(params.model_dir, "checkpoint"))
     # Choose and run training loop
     if params.api == 'builtin':
