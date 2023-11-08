@@ -312,12 +312,10 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 
 
 ## Advanced
- 
 The following sections provide details of the script structure and available 
 options.
  
 ### Repo structure
- 
 The root directory contains:
 * `main.py`: The entry point of the application.
 * `Dockerfile`: Specifies the container with the basic set of dependencies to 
@@ -354,12 +352,10 @@ the [Electron density generation](#electron-density-generation) section.
 The `images/` folder contains README figures.
  
 ### Parameters
- 
 Following is a list of the available parameters for the `main.py` script:
 
 
 #### General parameters
-
 * `--exec_mode`: The execution mode of the script:
   * `train`: (DEFAULT) trains model.
   * `evaluate`: performs evaluation on the validation subset.
@@ -415,7 +411,6 @@ polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
 
 
 #### Model definition parameters
-
 * `--model`: index of the RhNet model to be used. Different models are defined
     in `rhnet.py`. DEFAULT: `linear`.
 * `--activation`: activation function:
@@ -447,7 +442,6 @@ DEFAULT: `False`.
 
 
 #### Data related parameters
-
 * `--augment`: Tells the script, how many augmented (shifted and rotated) 
     electron densities images are available for each molecular geometry. 
     Augmentation itself is done elsewhere. DEFAULT: `25`.
@@ -469,7 +463,6 @@ in error analysis mode
 
 
 #### Evaluation/holdout split parameters
-
 * `--eval_split`: Turns on evaluation during model training. If 
     ***--eval_split n*** is specified, the script will randomly sample 
     1/***n*** of the polymer-solvent pairs into the validation set. 
@@ -500,7 +493,6 @@ polymer,solvent
 
 
 #### Training/evaluation parameters
-
 * `--batch_size`: Size of the minibatch. DEFAULT: `1`.
 * `--learning_rate`: Adam’s learning rate. DEFAULT: `0.0001`.
 * `--learning_rate_decay`: Learning rate exponential decay coefficient. 
@@ -524,7 +516,6 @@ polynomial decay schedule. DEFAULT: `None`.
 
 
 #### Regularization parameters
-
 * `--dnn_dropout`: Use dropout regularization for dense part. DEFAULT: `None`.
 * `--cnn_dropout`: Use dropout regularization for convolutional part. 
     DEFAULT: `None`.
@@ -533,18 +524,15 @@ polynomial decay schedule. DEFAULT: `None`.
 
 
 #### Miscellaneous
-
 * `--zdt`: Perform a second run of error analysis using zero densities
 
 
 ### Command-line options 
-
 To see the full list of available options and their descriptions, use 
 the `-h` or `--help` command-line option, for example:
 ```bash
 python main.py --help
 ```
- 
 The following example output is printed when running the model:
 ```python main.py --help
 usage: main.py [-h] [--exec_mode {train,evaluate,predict,error_analysis,train_and_error_analysis}] 
@@ -1065,15 +1053,64 @@ repeating unit with two dangling bonds
 * `--rdkit_thresh <thresh>`  conformer difference threshold for RDKit
 
 
-**Other options:**
+### Parameters 
+* `--exec_mode`: The execution mode of the script:
+  * `conf`: search for conformations and optimize their geometries
+  * `cube`: perform single-point calculations and generate density images
+  * `conf_and_cube`: (DEFAULT) search for conformations, optimize their 
+geometries, perform single-point calculations and generate density images
+  * `cube_to_predict`: perform only single-point calculations on the 
+user-supplied geometries. No shifts or rotations will be applied to electron 
+densities
+* `--mol_dir`: input .mol or .xyz structures directory
+* `--out_dir`: a directory where temporary files and the results will be stored
+* `--pal`: number of CPU cores to use in DFT calculations. DEFAULT: `12`
+* `--conf_level`: Highest level of geometry optimization. By default, the 
+script will successively optimize geometries at molecular mechanics level in 
+RDKit, then at XTB and DFT levels in ORCA
+  * `ff`: optimize geometries at molecular mechanics level in RDKit only
+  * `semi`: optimize geometries at molecular mechanics level in RDKit and XTB 
+level in ORCA
+  * `dft`: (DEFAULT) optimize geometries at molecular mechanics level in RDKit 
+and XTB and DFT levels in ORCA 
+  * `ff_dft`: omit XTB optimization 
+* `--use_name_convention`: suggest structure with xyz-filename starting with
+`s_` to be a solvent molecule and with `p_` to be a polymer repeating unit. In
+polymer repeating unit geometries 8 last atoms are suggested to be screening 
+Me- groups and will be removed for single-point calculation and density image
+generation
+* `--component`: suggest all structures in xyz-files to be (DEFAULT: `None`):
+  * `solvent`: solvent - calculate images for the whole molecule
+  * `polymer`: polymer - 8 last atoms are suggested to be screening Me- groups 
+and will be removed for single-point calculation and density image generation
+* `--rdkit_thresh`: RDKit conformers difference criteria. DEFAULT: `0.1`
+* `--rdkit_nconf`: max number of conformers RDKit will generate. DEFAULT: `1000`
+* `--rdkit_thresh_keep`: energy window to keep conformers within during 
+optimization in RDKit, kJ/mol. DEFAULT: `20`
+* `--orca_thresh_keep`: energy window to keep conformers within during 
+optimization in ORCA, kJ/mol. DEFAULT: `5`
+* `--cube_n`: dimension of output density images, points. DEFAULT: `80`
+* `--cube_spacing`: spacing in output density images, Angstroem. DEFAULT: `0.4`
+* `--cube_scaling`: scale electron density. DEFAULT: 75
+* `--cube_aug`: number of translationally and rotationally augmented density
+images to be generated, max is 25. DEFAULT: `25`
+* `--extend_cube`: density resolution increment. The original .cube files 
+generated by ORCA will have `--extend_cube`-times better resolution than 
+requested by `--cube_n`. Next density images resolution will be decreased to 
+the target value via averaging instead of interpolation. DEFAULT: `6`
+* `--orca_path`: ORCA binaries location, can also be taken from environmental 
+variable `ORCA`
+* `--conf_path`: CONFORMERS script location, can also be taken from 
+environmental variable `CONFORMERS` 
 
-To see the full list of available options and their descriptions, use the `-h` or `--help` command-line option, for example:
+### Command-line options
+To see the full list of available options and their descriptions, use the `-h` 
+or `--help` command-line option, for example:
 ```bash
 python qcdata_gen/main.py --help
 ```
- 
 The following example output is printed:
-```
+```python qcdata_gen/main.py --help
 usage: main.py [-h] [--exec_mode {conf,cube,conf_and_cube,cube_to_predict}] 
                [--mol_dir MOL_DIR] --out_dir OUT_DIR [--pal PAL] 
                [--conf_level {ff,semi,dft,ff_dft}] [--use_name_convention] 
@@ -1094,14 +1131,20 @@ optional arguments:
   --out_dir OUT_DIR     Directory with output data
   --pal PAL             Number of CPU cores to use in calculations
   --conf_level {ff,semi,dft,ff_dft}
-                        Highest level of conf geometry optimization, successively optimize at ff, xtb and dft levels by default. For example xtb option will do ff and
+                        Highest level of conf geometry optimization, 
+                        successively optimize at ff, xtb and dft levels by 
+                        default. For example xtb option will do ff and
                         xtb optimizations. ff-dft will omit xtb step.
   --use_name_convention
-                        Suggest structure with xyz-filename starting with: 's_' to be a solvent molecule and with 'p_' to be a monomer - 8 last atoms are suggested to
-                        be screening Me- groups and will be removed for cube eval
+                        Suggest structure with xyz-filename starting with: 's_' 
+                        to be a solvent molecule and with 'p_' to be a monomer 
+                        - 8 last atoms are suggested to be screening Me- groups 
+                        and will be removed for cube eval
   --component {solvent,polymer}
-                        Suggest all structures in xyz-files to be: solvent - calculate/interpolate cube for the whole molecule polymer - 8 last atoms are suggested to
-                        be screening Me- groups and will be removed for cube eval
+                        Suggest all structures in xyz-files to be: solvent - 
+                        calculate/interpolate cube for the whole molecule 
+                        polymer - 8 last atoms are suggested to be screening 
+                        Me- groups and will be removed for cube eval
   --rdkit_thresh RDKIT_THRESH
                         Conformers energy difference criteria
   --rdkit_nconf RDKIT_NCONF
@@ -1152,6 +1195,7 @@ optional arguments:
 - [x] check smiles.tar.xz for presence of S-O bonds instead of S=O bonds
 - [ ] add to qcdata_gen script a check for a single-atom input geometry
 - [x] merge solvents 31 and 63 - both are SO2
+- [ ] disable RDKit import in cube_to_predict mode
 
 
 ## Notes
