@@ -1091,7 +1091,6 @@ optimization in RDKit, kJ/mol. DEFAULT: `20`
 optimization in ORCA, kJ/mol. DEFAULT: `5`
 * `--cube_n`: dimension of output density images, points. DEFAULT: `80`
 * `--cube_spacing`: spacing in output density images, Angstroem. DEFAULT: `0.4`
-* `--cube_scaling`: scale electron density. DEFAULT: 75
 * `--cube_aug`: number of translationally and rotationally augmented density
 images to be generated, max is 25. DEFAULT: `25`
 * `--extend_cube`: density resolution increment. The original .cube files 
@@ -1117,9 +1116,9 @@ usage: main.py [-h] [--exec_mode {conf,cube,conf_and_cube,cube_to_predict}]
                [--component {solvent,polymer}] [--rdkit_thresh RDKIT_THRESH] 
                [--rdkit_nconf RDKIT_NCONF] [--rdkit_thresh_keep RDKIT_THRESH_KEEP] 
                [--orca_thresh_keep ORCA_THRESH_KEEP] [--cube_n CUBE_N] 
-               [--cube_spacing CUBE_SPACING] [--cube_scaling CUBE_SCALING] 
-               [--cube_aug CUBE_AUG] [--extend_cube EXTEND_CUBE] 
-               [--orca_path ORCA_PATH] [--conf_path CONF_PATH]
+               [--cube_spacing CUBE_SPACING] [--cube_aug CUBE_AUG] 
+               [--extend_cube EXTEND_CUBE] [--orca_path ORCA_PATH] 
+               [--conf_path CONF_PATH]
 
 ConfGen
 
@@ -1156,8 +1155,6 @@ optional arguments:
   --cube_n CUBE_N       Dimension of interpolated .cube, points
   --cube_spacing CUBE_SPACING
                         Spacing in interpolated .cube, Angstroem
-  --cube_scaling CUBE_SCALING
-                        Scale electron density
   --cube_aug CUBE_AUG   Number of augmented .cubes, max is 25
   --extend_cube EXTEND_CUBE
                         Number of points to average cube density

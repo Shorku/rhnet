@@ -82,11 +82,6 @@ PARSER.add_argument('--cube_spacing',
                     default=0.4,
                     help="""Spacing in interpolated .cube, Angstroem""")
 
-PARSER.add_argument('--cube_scaling',
-                    type=float,
-                    default=75.0,
-                    help="""Scale electron density""")
-
 PARSER.add_argument('--cube_aug',
                     type=int,
                     default=25,
@@ -121,7 +116,6 @@ def parse_args(flags):
         'orca_thresh_keep': flags.orca_thresh_keep,
         'cube_n': flags.cube_n,
         'cube_spacing': flags.cube_spacing,
-        'cube_scaling': flags.cube_scaling,
         'cube_aug': flags.cube_aug,
         'extend_cube': flags.extend_cube,
         'orca_path': flags.orca_path,
