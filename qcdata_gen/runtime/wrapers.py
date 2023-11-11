@@ -12,8 +12,10 @@ import shutil
 from datetime import datetime
 from multiprocessing import Process
 
-
-from mol_model.rdkit_driver import rdkit_gen
+try:
+    from mol_model.rdkit_driver import rdkit_gen
+except ModuleNotFoundError:
+    print('Warning: RDKit is missing, this may cause script execution failure')
 from mol_model.conformers_driver import conformers_filter
 from mol_model.orca_driver import orca_gen, orca_cube, orca_rescale_cubes
 from mol_model.orca_driver import orca_tmp_clear
