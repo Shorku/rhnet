@@ -105,6 +105,7 @@ def convert_qc_cubes(input_dir, output_dir, params):
             max_disp = [max(i) for i in zip(eldens_disp, spdens_disp)]
             random_states = random.sample(unique_cube_rot_states, aug)
             for j in range(aug):
+                print('Rolling!')
                 rot_state = random_states[j]
                 disp_state = [random.randint(-i, i) for i in max_disp]
 

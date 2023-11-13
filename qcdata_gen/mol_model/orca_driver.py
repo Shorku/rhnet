@@ -24,21 +24,24 @@ def orca_gen(input_dir, job, jobs_files, thresh_keep, level, pal):
     e_dft = []
     for file in jobs_files:
         file_path = os.path.join(input_dir, file)
+        e_dft.append(0)
         with open(file_path, 'r') as xyz:
-            xyz_block = ''.join(xyz.readlines()[2:])
+            xyz_lines = xyz.readlines()
+            if len(xyz_lines[2:]) == 1:
+                orca_xyz_name = f'{os.path.splitext(file)[0]}.{level}.xyz'
+                with open(orca_xyz_name, 'w') as out_xyz:
+                    out_xyz.write(''.join(xyz_lines))
+                break
+            xyz_block = ''.join(xyz_lines[2:])
             input_string = qc_input_string.format(xyz_block)
-
         orca_job_name = f'{os.path.splitext(file)[0]}.{level}'
         orca_inp = f'{orca_job_name}.inp'
         orca_out = f'{orca_job_name}.out'
         with open(orca_inp, 'w') as inp:
             inp.write(input_string)
-
         cli_opts = [orca_path, orca_inp]
         with open(orca_out, 'w') as out:
             subprocess.run(cli_opts, stdout=out)
-
-        e_dft.append(0)
         cli_opts = ['grep', 'ORCA TERMINATED NORMALLY', orca_out]  # TODO Fix!
         conv_flag = float(subprocess.run(cli_opts).returncode)
         conv_flag = 1.0 if conv_flag == 0.0 else 0.0
@@ -46,7 +49,6 @@ def orca_gen(input_dir, job, jobs_files, thresh_keep, level, pal):
             for j in out:
                 if 'FINAL SINGLE POINT ENERGY' in j:
                     e_dft[-1] = float(j.split()[4]) * conv_flag
-
     e_dft_min = min(e_dft)
     conformers = []
     for file, e in zip(jobs_files, e_dft):
