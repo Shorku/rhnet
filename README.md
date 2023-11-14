@@ -1174,8 +1174,8 @@ optional arguments:
 ### Inference
 - [x] inference utility
 - [x] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
-- [ ] convert pressure and temperature back to MPa and K in inference log
-- [ ] convert predicted values to weight fractions in inference log
+- [x] convert pressure and temperature back to MPa and K in inference log
+- [x] convert predicted values to weight fractions in inference log
 - [ ] add option to choose printing predicted values in cm3(STP)/cm3 
 - [x] prune and upload fitted models
 - [ ] utility for nice inference reports (Matplotlib + LaTeX?)
@@ -1218,8 +1218,3 @@ strange discontinuities
 ### Other notes
 
 - 10.1002/polb.1181. Dual mode sorption parameters are apparently incorrect
-
-
-
-
-

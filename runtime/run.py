@@ -147,6 +147,18 @@ def predict(params, model, dataset):
     prediction = pd.concat([dataset.index_table,
                             pd.DataFrame(prediction, columns=['prediction'])],
                            axis=1)
+    prediction['prediction'] = \
+        ((10 ** prediction['prediction']) * prediction['solv_mass']) / \
+        (prediction['poly_mass'] +
+         (10 ** prediction['prediction']) * prediction['solv_mass'])
+    prediction['temperature'] = \
+        prediction['temperature'].\
+        mul(dataset.data_scale.t_scale).\
+        add(dataset.data_scale.t_shift)
+    prediction['pressure'] = \
+        10 ** (prediction['pressure'].
+               mul(dataset.data_scale.p_scale).
+               add(dataset.data_scale.p_shift))
     log_path = os.path.join(params.log_dir,
                             f'prediction_{params.log_name}.csv')
     prediction.to_csv(log_path, index=False)
