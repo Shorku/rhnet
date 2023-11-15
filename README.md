@@ -1183,7 +1183,7 @@ optional arguments:
 ### Maintenance
 - [ ] test automation
 - [ ] compactize model definition code
-- [ ] refactor stuff triggering SettingWithCopyWarning
+- [x] refactor stuff triggering SettingWithCopyWarning
 ### Further development
 - [x] on-the-fly translational and rotational augmentation
 - [ ] sparse convolutions

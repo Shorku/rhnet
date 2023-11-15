@@ -493,15 +493,15 @@ class DatasetFit(Dataset):
                   on=['polymer', 'solvent'])[['expno', 'samples']]
 
         if self.make_even:
-            exp_set_cut = exp_val_set[exp_val_set['cut'] == 1]
+            exp_set_cut = exp_val_set[exp_val_set['cut'] == 1].copy()
             mean = exp_set_cut['wa'].mean()
             std = exp_set_cut['wa'].std()
-            exp_set_cut['freq'] = 1 / (
-                (((exp_set_cut['wa'] - mean) / std).apply(
-                    np.square) * (-0.5)).apply(np.exp))
+            exp_set_cut['freq'] = \
+                1 / ((((exp_set_cut['wa'] - mean) / std).apply(np.square)
+                      * (-0.5)).apply(np.exp))
             exp_set_cut.loc[exp_set_cut['wa'] < mean, ['freq']] = 1
-            exp_set_cut.loc[:, ['freq']] = exp_set_cut.loc[:, ['freq']].astype(
-                np.int32)
+            exp_set_cut.loc[:, ['freq']] = \
+                exp_set_cut.loc[:, ['freq']].astype(np.int32)
             mapper_index = mapper_index.merge(exp_set_cut, on='expno')
             mapper_index.loc[:, 'samples'] = mapper_index['samples'] * \
                 mapper_index['freq']
