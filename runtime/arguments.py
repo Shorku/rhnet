@@ -293,6 +293,10 @@ PARSER.add_argument('--zero_density_test', '--zdt', dest='zdt',
                     action='store_true', help="""Perform a second run of error
                     analysis using zero densities""")
 
+PARSER.add_argument('--log_cm3cm3', '--logcm', dest='logcm',
+                    action='store_true', help="""Log predicted values in
+                    cm3/cm3 instead of weight fraction""")
+
 
 def parse_args(flags):
     return Munch({
@@ -357,4 +361,5 @@ def parse_args(flags):
         'cnn_l2': flags.cnn_l2,
         # Miscellaneous
         'zdt': flags.zdt,
+        'logcm': flags.logcm,
     })

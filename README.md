@@ -319,21 +319,21 @@ options.
 The root directory contains:
 * `main.py`: The entry point of the application.
 * `Dockerfile`: Specifies the container with the basic set of dependencies to 
-run RhNet.
+    run RhNet.
 * `requirements.txt`: Extra requirements for RhNet.
 
 The `runtime/` folder encapsulates the runtime logic:
 * `run.py`: Implements the logic for training, evaluation, testing and 
-prediction.
+    prediction.
 * `setup.py`: Implements the functions to set up environment, create necessary
-directories, and initiate logging.
+    directories, and initiate logging.
 * `arguments.py`: Command-line arguments parsing.
 
 The `data_loading/` folder encapsulates the dataset loading and construction 
 logic:
 * `data_loader.py`: Implements loading of the necessary tables, construction
-and splitting of the dataset into train and evaluation subsets, and provides a 
-generator to prepare examples for training and evaluation.
+    and splitting of the dataset into train and evaluation subsets, and 
+    provides a generator to prepare examples for training and evaluation.
 
 The `model/` folder contains RhNet and its building blocks:
 * `blocks.py`: Implements different blocks that are used to assemble RhNet.
@@ -366,7 +366,7 @@ Following is a list of the available parameters for the `main.py` script:
     full_table_{--log_name}.csv and predicted values to 
     detailed_pred_{--log_name}.csv for subsequent analysis
 * `--model_dir`: The directory to save checkpoints and the trained model. 
-DEFAULT: `./results`. 
+    DEFAULT: `./results`. 
 * `--data_dir`: The directory containing the dataset. Required parameter.
 * `--data_csv`: The .csv file containing experimental sorption data. The `.csv` file should look like
     (DEFAULT: `experimental_dataset.csv`):
@@ -427,18 +427,18 @@ polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
     If not enabled, the `model_dir` will be rewritten. DEFAULT: `False`.
 * `--load_model`: Load the saved model. DEFAULT: `False`.
 * `--mw`: Use only Mw (weight average molecular weight) and drop Mn (number 
-average molecular weight) features. If not enabled, both Mw and Mn features 
-are used. DEFAULT: `False`.
+    average molecular weight) features. If not enabled, both Mw and Mn features 
+    are used. DEFAULT: `False`.
 * `--amorph`: Use only amorphous/melted polymers from the dataset and drop the
-`cryst` feature. DEFAULT: `False`.
+    `cryst` feature. DEFAULT: `False`.
 * `--tg`: Use polymer glass transition temperature as a feature. 
-DEFAULT: `False`.
+    DEFAULT: `False`.
 * `--dens`: Use polymer density at normal conditions as a feature. DEFAULT: 
-`False`.
+    `False`.
 * `--bt`: Use solvents boiling temperature at normal pressure as a feature. 
-DEFAULT: `False`.
+    DEFAULT: `False`.
 * `--ctp`: Use solvents critical temperature and pressure as features. 
-DEFAULT: `False`.
+    DEFAULT: `False`.
 
 
 #### Data related parameters
@@ -459,7 +459,7 @@ DEFAULT: `False`.
 * `--make_even`: Try to tune sampling weights to equalize impacts of the 
     examples with medium and high solvent content assuming normal distribution
 * `--analysis_n`: Loop only through the first `n` examples of the dataset 
-in error analysis mode
+    in error analysis mode
 
 
 #### Evaluation/holdout split parameters
@@ -496,9 +496,9 @@ polymer,solvent
 * `--batch_size`: Size of the minibatch. DEFAULT: `1`.
 * `--learning_rate`: Adam’s learning rate. DEFAULT: `0.0001`.
 * `--learning_rate_decay`: Learning rate exponential decay coefficient. 
-   DEFAULT: `0.0001`.
+    DEFAULT: `0.0001`.
 * `--learning_rate_decay_steps`: Learning rate exponential decay rate. 
-   DEFAULT: `600000`.
+    DEFAULT: `600000`.
 * `--max_steps`: Maximum number of steps (batches) for each epoch during a 
     training run. If set to `0` will consume the whole dataset. DEFAULT: `0`.
 * `--epochs`: Sets the number of epochs for the training run. DEFAULT: `1`.
@@ -507,10 +507,11 @@ polymer,solvent
 * `--checkpoint_every`: Save a model checkpoint every n epochs. Will not save
     checkpoints if set to `0`. DEFAULT: `0`.
 * `--initial_epoch`: Set initial epoch for model fitting. Applied only to 
-functional models. This option is only needed for correct callbacks functioning
-while fitting loaded models. Otherwise, it has no effect. DEFAULT: `0`.
+    functional models. This option is only needed for correct callbacks 
+    functioning while fitting loaded models. Otherwise, it has no effect. 
+    DEFAULT: `0`.
 * `--prune_model`: Define final model sparsity and perform model pruning with
-polynomial decay schedule. DEFAULT: `None`.
+    polynomial decay schedule. DEFAULT: `None`.
 * `--prune_start`: Define model pruning starting step. DEFAULT: `0`.
 * `--prune_end`: Define model pruning final step. DEFAULT: `None`.
 
@@ -525,6 +526,7 @@ polynomial decay schedule. DEFAULT: `None`.
 
 #### Miscellaneous
 * `--zdt`: Perform a second run of error analysis using zero densities
+* `--logcm`: Save predicted values in cm3(STP)/cm3 instead of weight fraction 
 
 
 ### Command-line options 
@@ -557,6 +559,7 @@ usage: main.py [-h] [--exec_mode {train,evaluate,predict,error_analysis,train_an
                [--checkpoint_every CHECKPOINT_EVERY]
                [--dnn_dropout DNN_DROPOUT] [--cnn_dropout CNN_DROPOUT] 
                [--dnn_l2 DNN_L2] [--cnn_l2 CNN_L2] [--zero_density_test]
+               [--log_cm3cm3]
 
 RhNet
 
@@ -660,6 +663,8 @@ optional arguments:
   --zero_density_test, --zdt
                         Perform a second run of error analysis using zero 
                         densities
+  --log_cm3cm3, --logcm Log predicted values in cm3/cm3 instead of weight 
+                        fraction
 ```
 
 ## Dataset structure
@@ -668,7 +673,7 @@ optional arguments:
 The `data/` folder contains the current version of the dataset. It includes
 following files:
 * `data/experimental_dataset.csv`: the .csv file containing experimental 
-sorption data:
+    sorption data:
 ```bash
 expno,polymer,solvent,mn,mw,cryst,tg,dens,pressure,temperature,wa,doi,notes
 1,1,11,18000,80000,0,593,1.2,0.002,283.5,0.08,"10.1021/ie3027873","Huntsman Advanced Materials"
@@ -676,48 +681,50 @@ expno,polymer,solvent,mn,mw,cryst,tg,dens,pressure,temperature,wa,doi,notes
 ...
 ```
 * `data/to_predict_ranges.csv`: the (example) .csv file containing intended 
-for prediction parameters ranges:
+    for prediction parameters ranges:
 ```bash
 polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
 1,1,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308.15,3
 1,10,18000,80000,0,593,1.2,0.1,1.0,10,298.15,308.15,3
 ...
 ```
-* `data/list_of_polymers.csv` matches the names of polymers and their ID numbers
-in the dataset
-* `data/list_of_solvents.csv` matches the names of solvents and their ID numbers
-in the dataset
+* `data/list_of_polymers.csv` matches the names of polymers and their ID 
+    numbers in the dataset
+* `data/list_of_solvents.csv` matches the names of solvents and their ID 
+    numbers in the dataset
 * `data/geometries.tar.xz` archive provides **geometries of solvents and 
-polymers'** repeating units (in `XYZ` format) which were used to calculate 
-electron densities. Filenames in the archive use the following convention:
+    polymers'** repeating units (in `XYZ` format) which were used to calculate 
+    electron densities. Filenames in the archive use the following convention:
   * Filenames contain four indexes separated by `_`
   * The first index is a letter: either `p`(olymer) or `s`(olvent)
   * Second index is an ID number of polymer specified in 
-`data/list_of_polymers.csv` or solvent specified in `data/list_of_solvents.csv`
+      `data/list_of_polymers.csv` or solvent specified in 
+      `data/list_of_solvents.csv`
   * Third index if for the choice of a particular repeating unit of a polymer
-and is always 1 for solvents.
+      and is always 1 for solvents.
   * Fourth index enumerates conformational isomers 
   * For example `p_3_2_1.xyz` will contain geometry of:
     * polymer, as it starts with `p`
-    * polyethylene (-CH<sub>2</sub>CH<sub>2</sub>-)<sub>n</sub> which is defined 
-by index `3`
+    * polyethylene (-CH<sub>2</sub>CH<sub>2</sub>-)<sub>n</sub> which is 
+      defined by index `3`
     * -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
-defined by index `2`
+      defined by index `2`
     * conformational isomer of the 
--CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
-number `1`
+      -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
+      number `1`
 * `data/smiles.tar.xz` archive contains polymers' repeating units and solvents
-in SMILES format. It is provided within the dataset to simplify its use in 
-fitting of models with other than electron density molecular representations. 
-Dangling bonds in polymers' repeating units are caped with Fr-atoms. Filenames 
-in the archive use the following convention:
+    in SMILES format. It is provided within the dataset to simplify its use in 
+    fitting of models with other than electron density molecular 
+    representations. Dangling bonds in polymers' repeating units are caped with
+    Fr-atoms. Filenames in the archive use the following convention:
   * Filenames contain two indexes separated by `_`
   * The first index is a letter: either `p`(olymer) or `s`(olvent)
   * Second index is an ID number of polymer specified in 
-`data/list_of_polymers.csv` or solvent specified in `data/list_of_solvents.csv`
+      `data/list_of_polymers.csv` or solvent specified in 
+      `data/list_of_solvents.csv`
 * `data/polymers.txt` contains python dictionary defining the number of
-available conformations for each polymer repeating unit (called "cut" in the 
-code for shortness): 
+    available conformations for each polymer repeating unit (called "cut" in 
+    the code for shortness): 
 ```bash
 {polymer_ID: [cut0_confs, cut1_confs...],
  polymer_ID: [cut0_confs],
@@ -733,7 +740,7 @@ code for shortness):
  ...}
 ```
 * `data/polymer_mass.csv` defines the molar masses (g/mol) of the polymer 
-repeating units, repeating units' (cuts) indexing is 1-based:
+    repeating units, repeating units' (cuts) indexing is 1-based:
 ```bash
 polymer, cut, poly_mass
 polymer_ID, cut_ID, mass
@@ -748,7 +755,7 @@ polymer,cut,poly_mass
 ...
 ```
 * `data/solvents.txt` contains python dictionary defining the number of
-available conformations for each solvent: 
+    available conformations for each solvent: 
 ```bash
 {solvent_ID: num_confs,
  solvent_ID: num_confs,
@@ -776,7 +783,7 @@ solvent,solv_mass
 ...
 ```
 * `data/solvent_macro_features.csv` defines solvent macroscopic features 
-(optional):
+    (optional):
 ```bash
 solvent,bt,ct,cp
 solvent_ID, boiling temp(K), critical temp(K), critical pressure(MPa)
@@ -790,9 +797,9 @@ solvent,bt,ct,cp
 2,111.6,190.6,4.6
 ...
 ```
-* `data/val_pairs.csv` defines the polymer-solvent pairs to be excluded from the 
-training set and to be included in the validation set for the training-time 
-evaluation.
+* `data/val_pairs.csv` defines the polymer-solvent pairs to be excluded from 
+    the training set and to be included in the validation set for the 
+    training-time evaluation:
 ```bash
 polymer,solvent
 polymer_ID, solvent_ID
@@ -905,19 +912,19 @@ polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
 It will request calculation of absorption of a gas with ID number `1` in a
 polymer with ID number `13`:
 * `cubes` directory should contain polymer repeating unit density in `p_13.npy`
-file and solvent molecule density in `s_1.npy` file
+    file and solvent molecule density in `s_1.npy` file
 * Number average (`mn`) and weight average (`mw`) molar weights of the polymer
-are set to 29000 and 140000 respectively
+    are set to 29000 and 140000 respectively
 * Degree of crystallinity (`cryst`) is set to 0 (ignored in the current model)
 * Polymer glass transition temperature (`tg`) is set to 243 K (ignored in the 
-current model)
+    current model)
 * Polymer density (`dens`) is set to 1.2304 g/cm3 (ignored in the current 
-model)
+    model)
 * The model will be applied to calculate `ntstep` isotherms with minimal 
-temperature `tmin` and maximal temperature `tmax`. In this example at 393.15 K,
-423.15 K, and 453.15 K.
+    temperature `tmin` and maximal temperature `tmax`. In this example at 
+    393.15 K, 423.15 K, and 453.15 K.
 * Each isotherm will be calculated for pressures in range `pmin` - `pmax` with 
-`npstep` points: at 2 MPa, 3 MPa... 20 MPa
+    `npstep` points: at 2 MPa, 3 MPa... 20 MPa
 
 ### Dataset for training
 The `data/` folder should contain the following files:
@@ -929,7 +936,7 @@ The `data/` folder should contain the following files:
 * `polymers.txt`
 * `solvents.txt`
 * `cubes` directory with density images
-Refer to [Dataset overview](#dataset-overview) section for details
+    Refer to [Dataset overview](#dataset-overview) section for details
 
 ## Electron density generation
 Repository contains a script to generate and optionally augment 3D images of 
@@ -947,12 +954,12 @@ data generation refer to the paper from [Reference](#reference) section.
 ### qcdata_gen requirements
 To run the script one will need:
 * [ORCA](https://orcaforum.kofo.mpg.de/index.php) - An ab initio, DFT and 
-semiempirical SCF-MO package
+    semiempirical SCF-MO package
 * [RDKit](https://www.rdkit.org/)* - Open-Source Cheminformatics Software
 * [XTB](https://xtb-docs.readthedocs.io/en/latest/contents.html)* - 
-Semiempirical Extended Tight-Binding Program Package
+    Semiempirical Extended Tight-Binding Program Package
 * [conformers](http://limor1.nioch.nsc.ru/quant/program/conformers/)* - a 
-standalone script for identical structures filtering
+    standalone script for identical structures filtering
 
 **Notes:**
 * RDKit, XTB, and conformers are only needed for training dataset generation 
@@ -960,16 +967,16 @@ standalone script for identical structures filtering
 ### qcdata_gen setup
 Download and install prerequisites:
 * Generation of both training and inference data requires [ORCA](https://orcaforum.kofo.mpg.de/index.php)
-package. ORCA is available as a ready-to-use binary package and doesn't require
-(for the time being) compilation and installation. For more details refer to 
-the official documentation or 
-[other resources](https://sites.google.com/site/orcainputlibrary/setting-up-orca).
-There are two options for the script to locate ORCA executables. 
-Either ORCA path can be retrieved from $ORCA environmental variable, or it can
-be provided as a command-line option `--orca_path <orca_path>`
+    package. ORCA is available as a ready-to-use binary package and doesn't 
+    require (for the time being) compilation and installation. For more details
+    refer to the official documentation or 
+    [other resources](https://sites.google.com/site/orcainputlibrary/setting-up-orca).
+    There are two options for the script to locate ORCA executables. 
+    Either ORCA path can be retrieved from $ORCA environmental variable, or it can
+    be provided as a command-line option `--orca_path <orca_path>`
 * [RDKit](https://www.rdkit.org/) is only needed to generate training examples.
-Here is RDKit installation example that worked for me (make sure to use your
-username, correct python path, and most recent RDKit version):
+    Here is RDKit installation example that worked for me (make sure to use your
+    username, correct python path, and most recent RDKit version):
 ```bash
 sudo apt install libboost-all-dev
 sudo apt install zlib1g-dev
@@ -988,20 +995,20 @@ make install
 ln -s /home/username/rdkit/lib/python3.8/site-packages/rdkit /home/username/.local/lib/python3.8/site-packages
 ```
 * [XTB](https://xtb-docs.readthedocs.io/en/latest/contents.html) is only needed
-to generate training examples. For XTB setup instructions refer to the 
-[documentation](https://xtb-docs.readthedocs.io/en/latest/setup.html). Once 
-downloaded and compiled be sure to make it executable and move it to the ORCA
-directory:
+    to generate training examples. For XTB setup instructions refer to the 
+    [documentation](https://xtb-docs.readthedocs.io/en/latest/setup.html). Once 
+    downloaded and compiled be sure to make it executable and move it to the 
+    ORCA directory:
 ```bash
 chmod +x xtb
 mv xtb orca_path/otool_xtb
 ```
 * [conformers](http://limor1.nioch.nsc.ru/quant/program/conformers/) script is 
-only needed to generate training examples. There are two options for the 
-qdata_gen script to locate conformers script. Either conformers path can be 
-retrieved from $CONFORMERS environmental variable, or it can be provided as a 
-command-line option `--conf_path <conf_path>`. Once downloaded make it 
-executable:
+    only needed to generate training examples. There are two options for the 
+    qdata_gen script to locate conformers script. Either conformers path can be 
+    retrieved from $CONFORMERS environmental variable, or it can be provided as 
+    a command-line option `--conf_path <conf_path>`. Once downloaded make it 
+    executable:
 ```bash
 chmod +x conformers
 ```
@@ -1014,15 +1021,15 @@ to `.npy` format suitable for the RhNet model.
 python3 qcdata_gen/main.py --exec_mode cube_to_predict --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --orca_path <orca_path> --use_name_convention
 ```
 * `--exec_mode cube_to_predict` will instruct the script to perform only 
-single-point calculations on the user-supplied geometries. No shifts or 
-rotations will be applied to electron densities
+    single-point calculations on the user-supplied geometries. No shifts or 
+    rotations will be applied to electron densities
 * `--use_name_convention` option suggests a structure with xyz-filename 
-starting with: `s_` to be a solvent molecule and with `p_` to be a polymer
-repeating unit with two dangling bonds
+    starting with: `s_` to be a solvent molecule and with `p_` to be a polymer
+    repeating unit with two dangling bonds
 * `--pal <ncores>` number of CPU cores to use in DFT calculations
 * `--mol_dir <input_path>` a directory where the script will look for input `.xyz` files 
 * `--out_dir <output_path>` a directory where temporary files and the results will be
-stored
+    stored
 * `--orca_path <orca_path>`
 
 ### qcdata_gen run for training data
@@ -1033,22 +1040,22 @@ The script can consume multiple .mol files from the input directory.
 python3 qcdata_gen/main.py --exec_mode conf_and_cube --pal <ncores> --mol_dir <input_path> --out_dir <output_path> --orca_path <orca_path> --conf_path <conf_path> --use_name_convention --rdkit_nconf <nconf> --rdkit_thresh <thresh>
 ```
 * `--exec_mode conf_and_cube` will instruct the script to generate a number of
-conformations using RDKit, optimize geometries using RDKit and ORCA 
-(consequently on the XTB and DFT levels) and finally perform single-point
-calculations to generate density images. By default, with translational and 
-rotational augmentation
+    conformations using RDKit, optimize geometries using RDKit and ORCA 
+    (consequently on the XTB and DFT levels) and finally perform single-point
+    calculations to generate density images. By default, with translational and 
+    rotational augmentation
 * `--pal <ncores>` number of CPU cores to use in DFT calculations
 * `--mol_dir <input_path>` a directory where the script will look for input 
-.mol files 
+    .mol files 
 * `--out_dir <output_path>` a directory where temporary files and the results 
-will be stored
+    will be stored
 * `--orca_path <orca_path>` a directory where ORCA binaries are stored. Can 
-also be defined in `ORCA` environment variable
+    also be defined in `ORCA` environment variable
 * `--conf_path <conf_path>` a directory where `conformers` script is stored. 
-Can also be defined in `CONFORMERS` environment variable
+    Can also be defined in `CONFORMERS` environment variable
 * `--use_name_convention` option suggests a structure with xyz-filename 
-starting with: `s_` to be a solvent molecule and with `p_` to be a polymer
-repeating unit with two dangling bonds
+    starting with: `s_` to be a solvent molecule and with `p_` to be a polymer
+    repeating unit with two dangling bonds
 * `--rdkit_nconf <nconf>` maximal number of conformers generated by RDKit
 * `--rdkit_thresh <thresh>`  conformer difference threshold for RDKit
 
@@ -1058,51 +1065,52 @@ repeating unit with two dangling bonds
   * `conf`: search for conformations and optimize their geometries
   * `cube`: perform single-point calculations and generate density images
   * `conf_and_cube`: (DEFAULT) search for conformations, optimize their 
-geometries, perform single-point calculations and generate density images
+      geometries, perform single-point calculations and generate density images
   * `cube_to_predict`: perform only single-point calculations on the 
-user-supplied geometries. No shifts or rotations will be applied to electron 
-densities
+      user-supplied geometries. No shifts or rotations will be applied to 
+      electron densities
 * `--mol_dir`: input .mol or .xyz structures directory
 * `--out_dir`: a directory where temporary files and the results will be stored
 * `--pal`: number of CPU cores to use in DFT calculations. DEFAULT: `12`
 * `--conf_level`: Highest level of geometry optimization. By default, the 
-script will successively optimize geometries at molecular mechanics level in 
-RDKit, then at XTB and DFT levels in ORCA
+    script will successively optimize geometries at molecular mechanics level 
+    in RDKit, then at XTB and DFT levels in ORCA
   * `ff`: optimize geometries at molecular mechanics level in RDKit only
   * `semi`: optimize geometries at molecular mechanics level in RDKit and XTB 
-level in ORCA
+      level in ORCA
   * `dft`: (DEFAULT) optimize geometries at molecular mechanics level in RDKit 
-and XTB and DFT levels in ORCA 
+      and XTB and DFT levels in ORCA 
   * `ff_dft`: omit XTB optimization 
 * `--use_name_convention`: suggest structure with xyz-filename starting with
-`s_` to be a solvent molecule and with `p_` to be a polymer repeating unit. In
-polymer repeating unit geometries 8 last atoms are suggested to be screening 
-Me- groups and will be removed for single-point calculation and density image
-generation
+    `s_` to be a solvent molecule and with `p_` to be a polymer repeating unit.
+    In polymer repeating unit geometries 8 last atoms are suggested to be 
+    screening Me- groups and will be removed for single-point calculation and 
+    density image generation
 * `--component`: suggest all structures in xyz-files to be (DEFAULT: `None`):
   * `solvent`: solvent - calculate images for the whole molecule
   * `polymer`: polymer - 8 last atoms are suggested to be screening Me- groups 
-and will be removed for single-point calculation and density image generation
+      and will be removed for single-point calculation and density image 
+      generation
 * `--rdkit_thresh`: RDKit conformers difference criteria. DEFAULT: `0.1`
 * `--rdkit_nconf`: max number of conformers RDKit will generate. DEFAULT: `1000`
 * `--rdkit_thresh_keep`: energy window to keep conformers within during 
-optimization in RDKit, kJ/mol. DEFAULT: `20`
+    optimization in RDKit, kJ/mol. DEFAULT: `20`
 * `--orca_thresh_keep`: energy window to keep conformers within during 
-optimization in ORCA, kJ/mol. DEFAULT: `5`
+    optimization in ORCA, kJ/mol. DEFAULT: `5`
 * `--cube_n`: dimension of output density images, points. DEFAULT: `80`
 * `--cube_spacing`: spacing in output density images, Angstroem. DEFAULT: `0.4`
 * `--cube_aug`: number of translationally and rotationally augmented density
-images to be generated, max is 25. If on-the-fly rotational and translational
-augmentation is chosen for training `--cube_aug 1` could probably be set. 
-DEFAULT: `25`
+    images to be generated, max is 25. If on-the-fly rotational and 
+    translational augmentation is chosen for training `--cube_aug 1` could 
+    probably be set. DEFAULT: `25`
 * `--extend_cube`: density resolution increment. The original .cube files 
-generated by ORCA will have `--extend_cube`-times better resolution than 
-requested by `--cube_n`. Next density images resolution will be decreased to 
-the target value via averaging instead of interpolation. DEFAULT: `6`
+    generated by ORCA will have `--extend_cube`-times better resolution than 
+    requested by `--cube_n`. Next density images resolution will be decreased 
+    to the target value via averaging instead of interpolation. DEFAULT: `6`
 * `--orca_path`: ORCA binaries location, can also be taken from environmental 
-variable `ORCA`
+    variable `ORCA`
 * `--conf_path`: CONFORMERS script location, can also be taken from 
-environmental variable `CONFORMERS` 
+    environmental variable `CONFORMERS` 
 
 ### Command-line options
 To see the full list of available options and their descriptions, use the `-h` 
@@ -1176,7 +1184,7 @@ optional arguments:
 - [x] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
 - [x] convert pressure and temperature back to MPa and K in inference log
 - [x] convert predicted values to weight fractions in inference log
-- [ ] add option to choose printing predicted values in cm3(STP)/cm3 
+- [x] add option to choose printing predicted values in cm3(STP)/cm3 
 - [x] prune and upload fitted models
 - [ ] utility for nice inference reports (Matplotlib + LaTeX?)
 - [ ] option for a lighter (RI-PBE/def2-SVP?) electron density calculation

@@ -689,6 +689,7 @@ class DatasetPred(Dataset):
         # Initialize general parameters
         super().__init__(params)
         self.to_pred_csv = params.to_pred_csv
+        self.logcm = params.logcm
         self.index_table = self._index_table()
 
     def _index_table(self):
@@ -705,6 +706,8 @@ class DatasetPred(Dataset):
         use_columns = ['polymer', 'solvent', 'pmin', 'pmax', 'npstep',
                        'tmin', 'tmax', 'ntstep',
                        'cryst'] + self.poly_macro_features
+        if self.logcm and 'dens' not in use_columns:
+            use_columns = use_columns + ['dens']
         ranges = pd.read_csv(os.path.join(self._data_dir, self.to_pred_csv),
                              dtype=data_types, usecols=use_columns)
         ranges_len = len(ranges)
@@ -739,12 +742,8 @@ class DatasetPred(Dataset):
                   on='polymer'). \
             merge(self.solv_mass[['solvent', 'solv_mass']],
                   on='solvent')
-        # log_name = f'predict_index_table_{self.log_name}.csv'
-        # log_path = os.path.join(self.log_dir, log_name)
-        # index_table.to_csv(log_path, index=False)
         self._scale_exp_set(index_table, use_columns + ['pressure',
                                                         'temperature'])
-
         return index_table
 
     def _cube_from_df(self, df_sample):

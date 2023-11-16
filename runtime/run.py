@@ -147,10 +147,26 @@ def predict(params, model, dataset):
     prediction = pd.concat([dataset.index_table,
                             pd.DataFrame(prediction, columns=['prediction'])],
                            axis=1)
-    prediction['prediction'] = \
-        ((10 ** prediction['prediction']) * prediction['solv_mass']) / \
-        (prediction['poly_mass'] +
-         (10 ** prediction['prediction']) * prediction['solv_mass'])
+    if params.logcm:
+        print('\nWarning: absorption in cm3/cm3 is chosen:\n'
+              '1. Gas molar volume is set to 22414 cm3/mol.\n'
+              '2. Polymer swelling is neglected.\n')
+        prediction['dens'] = \
+            (10 ** (prediction['dens'].
+                    mul(dataset.data_scale.d_scale).
+                    add(dataset.data_scale.d_shift))) * prediction['poly_mass']
+        prediction['prediction'] = \
+            (10 ** prediction['prediction']) * 22414 \
+            * prediction['dens'] / prediction['poly_mass']
+        prediction = \
+            prediction.rename(columns={'prediction': 'prediction_cm3cm3'})
+    else:
+        prediction['prediction'] = \
+            ((10 ** prediction['prediction']) * prediction['solv_mass']) / \
+            (prediction['poly_mass'] +
+             (10 ** prediction['prediction']) * prediction['solv_mass'])
+        prediction = \
+            prediction.rename(columns={'prediction': 'prediction_massfrac'})
     prediction['temperature'] = \
         prediction['temperature'].\
         mul(dataset.data_scale.t_scale).\
