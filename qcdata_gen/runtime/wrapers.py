@@ -43,9 +43,10 @@ def generate_qc_conf(input_dir, output_dir, level, params):
     job_names = sort_xyz_into_jobs(input_dir)
     thresh_keep = params.orca_thresh_keep
     pal = params.pal
+    dft_scheme = params.dft_scheme
     for job, jobs_files in job_names.items():
-        conformers = orca_gen(input_dir, job, jobs_files,
-                              thresh_keep, level, pal)
+        conformers = orca_gen(input_dir, jobs_files, thresh_keep, level, pal,
+                              dft_scheme)
         write_conf_from_list(job, conformers, output_dir)
 
 
@@ -96,6 +97,8 @@ def generate_qc_cube(input_dir, output_dir, params):
     xyz_file_list = [file for file in os.listdir(input_dir)
                      if file.endswith('.xyz')]
     pal = params.pal
+    cube_n = params.cube_n
+    dft_scheme = params.dft_scheme
     for xyz_file in xyz_file_list:
         if (params.component == 'solvent'
                 or (params.use_name_convention
@@ -110,7 +113,7 @@ def generate_qc_cube(input_dir, output_dir, params):
                             'files with s_ or p_ and use --use_name_convention'
                             'or use --component with solvent of polymer arg')
         xyz_path = os.path.join(input_dir, xyz_file)
-        orca_cube(xyz_path, pal, ispolymer, params)
+        orca_cube(xyz_path, pal, ispolymer, cube_n, dft_scheme)
     # Check whether output_dir contains already some of the required .cube's
     cube_file_list_done = [f for f in os.listdir(output_dir)
                            if f.endswith('.cube')]

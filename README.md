@@ -1080,7 +1080,11 @@ python3 qcdata_gen/main.py --exec_mode conf_and_cube --pal <ncores> --mol_dir <i
       level in ORCA
   * `dft`: (DEFAULT) optimize geometries at molecular mechanics level in RDKit 
       and XTB and DFT levels in ORCA 
-  * `ff_dft`: omit XTB optimization 
+  * `ff_dft`: omit XTB optimization
+* `--dft_scheme`: Choice of DFT methods for optimization and electron density 
+    calculation (DEFAULT: `normal`):
+  * `normal`: `r2SCAN-3c` for optimization and `B3LYP/def2-TZVP` for density 
+  * `fast`: `B97-3c` for optimization and `PBE/def2-SVP` for density 
 * `--use_name_convention`: suggest structure with xyz-filename starting with
     `s_` to be a solvent molecule and with `p_` to be a polymer repeating unit.
     In polymer repeating unit geometries 8 last atoms are suggested to be 
@@ -1122,9 +1126,10 @@ The following example output is printed:
 ```python qcdata_gen/main.py --help
 usage: main.py [-h] [--exec_mode {conf,cube,conf_and_cube,cube_to_predict}] 
                [--mol_dir MOL_DIR] --out_dir OUT_DIR [--pal PAL] 
-               [--conf_level {ff,semi,dft,ff_dft}] [--use_name_convention] 
-               [--component {solvent,polymer}] [--rdkit_thresh RDKIT_THRESH] 
-               [--rdkit_nconf RDKIT_NCONF] [--rdkit_thresh_keep RDKIT_THRESH_KEEP] 
+               [--conf_level {ff,semi,dft,ff_dft}] [--dft_scheme {normal,fast}]
+               [--use_name_convention] [--component {solvent,polymer}] 
+               [--rdkit_thresh RDKIT_THRESH] [--rdkit_nconf RDKIT_NCONF] 
+               [--rdkit_thresh_keep RDKIT_THRESH_KEEP] 
                [--orca_thresh_keep ORCA_THRESH_KEEP] [--cube_n CUBE_N] 
                [--cube_spacing CUBE_SPACING] [--cube_aug CUBE_AUG] 
                [--extend_cube EXTEND_CUBE] [--orca_path ORCA_PATH] 
@@ -1144,6 +1149,9 @@ optional arguments:
                         successively optimize at ff, xtb and dft levels by 
                         default. For example xtb option will do ff and
                         xtb optimizations. ff-dft will omit xtb step.
+  --dft_scheme {normal,fast}
+                        Choice of DFT methods for optimization and electron 
+                        density calculation
   --use_name_convention
                         Suggest structure with xyz-filename starting with: 's_' 
                         to be a solvent molecule and with 'p_' to be a monomer 
@@ -1187,7 +1195,7 @@ optional arguments:
 - [x] add option to choose printing predicted values in cm3(STP)/cm3 
 - [x] prune and upload fitted models
 - [ ] utility for nice inference reports (Matplotlib + LaTeX?)
-- [ ] option for a lighter (RI-PBE/def2-SVP?) electron density calculation
+- [x] option for a lighter (RI-PBE/def2-SVP?) electron density calculation
 ### Maintenance
 - [ ] test automation
 - [ ] compactize model definition code

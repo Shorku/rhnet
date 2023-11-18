@@ -33,7 +33,14 @@ PARSER.add_argument('--conf_level',
                     help="""Highest level of conf geometry optimization,
                     successively optimize at ff, xtb and dft levels by default.
                     For example xtb option will do ff and xtb optimizations.
-                    ff-dft will omit xtb step.""")
+                    ff-dft will omit xtb step""")
+
+PARSER.add_argument('--dft_scheme',
+                    choices=['normal', 'fast'],
+                    type=str,
+                    default='normal',
+                    help="""Choice of DFT methods for optimization and
+                    electron density calculation""")
 
 PARSER.add_argument('--use_name_convention',
                     dest='use_name_convention',
@@ -108,6 +115,7 @@ def parse_args(flags):
         'out_dir': flags.out_dir,
         'pal': flags.pal,
         'conf_level': flags.conf_level,
+        'dft_scheme': flags.dft_scheme,
         'use_name_convention': flags.use_name_convention,
         'component': flags.component,
         'rdkit_thresh': flags.rdkit_thresh,

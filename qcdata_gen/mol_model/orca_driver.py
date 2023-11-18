@@ -18,8 +18,9 @@ def orca_tmp_clear(data_dir, compress):
         dump_temp_files(data_dir, ext, compress=False, remove=True)
 
 
-def orca_gen(input_dir, job, jobs_files, thresh_keep, level, pal):
-    qc_input_string = orca_xtb(pal) if level == 'semi' else orca_dft(pal)
+def orca_gen(input_dir, jobs_files, thresh_keep, level, pal, dft_scheme):
+    qc_input_string = \
+        orca_xtb(pal) if level == 'semi' else orca_dft(pal, dft_scheme)
     orca_path = f'''{os.environ['ORCA']}/orca'''
     e_dft = []
     for file in jobs_files:
@@ -62,9 +63,9 @@ def orca_gen(input_dir, job, jobs_files, thresh_keep, level, pal):
     return conformers
 
 
-def orca_cube(xyz_path, pal, ispolymer, params):
-    n_target = params.cube_n
-    qc_input_string = orca_dft_cube(pal, 3 if ispolymer else 1, n_target)
+def orca_cube(xyz_path, pal, ispolymer, cube_n, dft_scheme):
+    qc_input_string = \
+        orca_dft_cube(pal, 3 if ispolymer else 1, cube_n, dft_scheme)
     orca_path = f'''{os.environ['ORCA']}/orca'''
     xyz_file = os.path.split(xyz_path)[1]
     orca_job_name = os.path.splitext(xyz_file)[0]
