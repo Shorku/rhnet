@@ -219,6 +219,7 @@ class DatasetFit(Dataset):
                 reset_index(drop=True)
             self.index_table_eval = self.index_table_eval. \
                 reset_index(drop=True)
+            self.eval_sample_size = len(self.index_table_eval)
             # remove parent index table after split if it isn't needed anymore
             if 'error_analysis' not in params.exec_mode:
                 del self.index_table
@@ -247,7 +248,6 @@ class DatasetFit(Dataset):
                 drop(['polymer', 'solvent'], axis=1)
         self.sample_table = None
         self.train_sample_size = self._index_table_chooser()
-        self.eval_sample_size = len(self.index_table_eval)
         if 'error_analysis' in params.exec_mode:
             self.analysis_sample_size = \
                 self.analysis_n if self.analysis_n else len(self.index_table)
@@ -582,6 +582,7 @@ class DatasetFit(Dataset):
                 self.sample_table = self.index_table.head(self.analysis_n)
             else:
                 self.sample_table = self.index_table
+            return len(self.sample_table)
         if is_evaluation:
             if self.fold:
                 self.sample_table = self. \
