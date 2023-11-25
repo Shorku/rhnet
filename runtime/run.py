@@ -80,10 +80,11 @@ def evaluate(params, model, dataset, logger, epoch, fold_no):
     if params.exec_mode == 'evaluate' \
             and params.resume_training\
             and (not params.load_model):
-        checkpoint = tf.train.Checkpoint(model=model)
-        checkpoint.restore(tf.train.latest_checkpoint(params.model_dir)).\
-            expect_partial()
-
+        # checkpoint = tf.train.Checkpoint(model=model)
+        # checkpoint.restore(tf.train.latest_checkpoint(params.model_dir)).\
+        #     expect_partial()
+        # model.load_weights(os.path.join(params.model_dir, "checkpoint"))
+        raise RuntimeError('Checkpoints should only be used for training')
     if params.api == 'builtin':
         evaluate_builtin(model, dataset, fold_no)
     elif params.api == 'custom':
@@ -112,9 +113,11 @@ def error_analysis(params, model, dataset):
     if params.exec_mode == 'error_analysis' \
             and params.resume_training\
             and (not params.load_model):
-        checkpoint = tf.train.Checkpoint(model=model)
-        checkpoint.restore(tf.train.latest_checkpoint(params.model_dir)).\
-            expect_partial()
+        # checkpoint = tf.train.Checkpoint(model=model)
+        # checkpoint.restore(tf.train.latest_checkpoint(params.model_dir)).\
+        #     expect_partial()
+        # model.load_weights(os.path.join(params.model_dir, "checkpoint"))
+        raise RuntimeError('Checkpoints should only be used for training')
     if params.api == 'builtin':
         error_analysis_builtin(params, model, dataset)
     elif params.api == 'custom':
@@ -136,8 +139,10 @@ def predict(params, model, dataset):
 
     """
     if (not params.load_model) and params.resume_training:
-        model.load_weights(os.path.join(params.model_dir, "checkpoint")). \
-            expect_partial()
+        # model.load_weights(os.path.join(params.model_dir, "checkpoint")). \
+        #     expect_partial()
+        # model.load_weights(os.path.join(params.model_dir, "checkpoint"))
+        raise RuntimeError('Checkpoints should only be used for training')
     if params.api == 'builtin':
         prediction = predict_builtin(model, dataset)
     elif params.api == 'custom':

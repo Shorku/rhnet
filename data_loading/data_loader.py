@@ -621,7 +621,7 @@ class DatasetFit(Dataset):
             log_path = os.path.join(self.log_dir, log_name)
             self.sample_table.to_csv(log_path, index=False)
         if is_analysis:
-            chunk_size = self.analysis_sample_size // self.parallel_preproc
+            chunk_size = self.analysis_sample_size  # // self.parallel_preproc
         elif is_evaluation:
             chunk_size = self.eval_sample_size // self.parallel_preproc
         else:
@@ -659,6 +659,16 @@ class DatasetFit(Dataset):
     def data_gen(self, is_evaluation=False, is_analysis=False,
                  with_zeros=False, fold_no=False):
         """Input function for training/evaluation"""
+        if is_analysis:
+            dataset = tf.data.Dataset.from_generator(
+                lambda: self.set_generator(is_evaluation, is_analysis,
+                                           with_zeros, fold_no, 0),
+                output_signature=(
+                    (self.cube_dim, self.cube_dim, self.macr_dim),
+                    self.labl_dim, ))
+            dataset = dataset.batch(self._batch_size, drop_remainder=True)
+            dataset = dataset.prefetch(self._batch_size)
+            return dataset
         if (not is_evaluation) or (self.fold or
                                    self.eval_split or
                                    self.eval_define):
