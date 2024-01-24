@@ -51,7 +51,7 @@ def main():
             train(params, model, dataset, logger)
 
     if 'evaluate' in params.exec_mode:
-        evaluate(params, model, dataset, logger, 0, None)
+        evaluate(params, model, dataset, logger, 0, False)
 
     if 'predict' in params.exec_mode:
         predict(params, model, dataset)
