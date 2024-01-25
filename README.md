@@ -208,6 +208,12 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
    `--augment 1` tells the script to skip rotations and shifts of the electron
    density images, which is unnecessary for inference.
 
+   **Notes:**
+
+   * If a model is trained with the `--augment_onthefly` option, it will 
+   currently produce inconsistent results. `--augment_onthefly` option requires
+   interpolation which smooths out density images, so the correct predictions 
+   also need smoothed images. The issue will be addressed soon.
 
 2. Training
    
