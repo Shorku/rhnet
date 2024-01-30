@@ -28,6 +28,7 @@ class Dataset:
         self._batch_size = params.batch_size
         self.log_dir = params.log_dir
         self.log_name = params.log_name
+        self.aug_onthefly = params.augment_onthefly
         self.precision = tf.float16 if params.use_amp else tf.float32
         self.load_precision = np.float16 if params.use_amp else np.float32
         self.image_dim = image_dim()
@@ -159,6 +160,49 @@ class Dataset:
         exp_set[feat_to_scale] = exp_set[feat_to_scale]. \
             apply(self.load_precision)
 
+    def _rotate_cube(self, cube):
+        cube_rot = [random.random() * 360 for i in range(3)]
+        cube_copy = np.copy(cube)
+        for i in range(2):
+            for angle, axes in zip(cube_rot, [(1, 0), (2, 0), (2, 1)]):
+                cube_copy[:, :, :, i] = \
+                    rotate(cube_copy[:, :, :, i], angle, axes=axes,
+                           reshape=False, order=3, cval=0.0, prefilter=False)
+        return cube_copy
+
+    def _shift_cube(self, cube):
+        margins = [[0, 0], [0, 0], [0, 0]]
+        dim = cube.shape[0]
+        profiles = [[0 for i in range(dim)],
+                    [0 for i in range(dim)],
+                    [0 for i in range(dim)]]
+        for i in range(dim):
+            profiles[0][i] = cube[i, :, :, 0].sum()
+            profiles[1][i] = cube[:, i, :, 0].sum()
+            profiles[2][i] = cube[:, :, i, 0].sum()
+        for axis in range(3):
+            for i in range(dim):
+                if profiles[axis][i] != 0:
+                    margins[axis][0] = -i
+                    break
+            for i in range(dim):
+                if profiles[axis][dim - i - 1] != 0:
+                    margins[axis][1] = i
+                    break
+        cube_copy = np.copy(cube)
+        if self.nonint_shift:
+            cube_shift = [random.uniform(*i) for i in margins]
+            for i in range(2):
+                cube_copy[:, :, :, i] = \
+                    shift(cube_copy[:, :, :, i], cube_shift, cval=0,
+                          prefilter=False, order=3)
+        else:
+            cube_shift = [random.randint(*i) for i in margins]
+            for i in range(2):
+                cube_copy[:, :, :, i] = \
+                    np.roll(cube_copy[:, :, :, i], cube_shift, axis=(0, 1, 2))
+        return cube_copy
+
 
 class DatasetFit(Dataset):
     """Load, separate and prepare the data for training and analysis"""
@@ -180,7 +224,6 @@ class DatasetFit(Dataset):
             self.parallel_preproc = params.parallel_preproc
         else:
             self.parallel_preproc = self._batch_size
-        self.aug_onthefly = params.augment_onthefly
         self.timeout = params.timeout
         self.nonint_shift = params.nonint_shift
         self.fold = params.fold
@@ -398,49 +441,6 @@ class DatasetFit(Dataset):
         else:
             return (self.poly_cube_set[poly],
                     self.solv_cube_set[solv])
-
-    def _rotate_cube(self, cube):
-        cube_rot = [random.random() * 360 for i in range(3)]
-        cube_copy = np.copy(cube)
-        for i in range(2):
-            for angle, axes in zip(cube_rot, [(1, 0), (2, 0), (2, 1)]):
-                cube_copy[:, :, :, i] = \
-                    rotate(cube_copy[:, :, :, i], angle, axes=axes,
-                           reshape=False, order=3, cval=0.0, prefilter=False)
-        return cube_copy
-
-    def _shift_cube(self, cube):
-        margins = [[0, 0], [0, 0], [0, 0]]
-        dim = cube.shape[0]
-        profiles = [[0 for i in range(dim)],
-                    [0 for i in range(dim)],
-                    [0 for i in range(dim)]]
-        for i in range(dim):
-            profiles[0][i] = cube[i, :, :, 0].sum()
-            profiles[1][i] = cube[:, i, :, 0].sum()
-            profiles[2][i] = cube[:, :, i, 0].sum()
-        for axis in range(3):
-            for i in range(dim):
-                if profiles[axis][i] != 0:
-                    margins[axis][0] = -i
-                    break
-            for i in range(dim):
-                if profiles[axis][dim - i - 1] != 0:
-                    margins[axis][1] = i
-                    break
-        cube_copy = np.copy(cube)
-        if self.nonint_shift:
-            cube_shift = [random.uniform(*i) for i in margins]
-            for i in range(2):
-                cube_copy[:, :, :, i] = \
-                    shift(cube_copy[:, :, :, i], cube_shift, cval=0,
-                          prefilter=False, order=3)
-        else:
-            cube_shift = [random.randint(*i) for i in margins]
-            for i in range(2):
-                cube_copy[:, :, :, i] = \
-                    np.roll(cube_copy[:, :, :, i], cube_shift, axis=(0, 1, 2))
-        return cube_copy
 
     def _form_index_tables(self,
                            poly_conf_num,
@@ -761,10 +761,24 @@ class DatasetPred(Dataset):
         poly = int(df_sample.at['polymer'])
         solv = int(df_sample.at['solvent'])
         return (
-            self.poly_cube_set.setdefault(poly, self._load_cube_sparse(
-                f'p_{poly}.npy')).todense(),
-            self.solv_cube_set.setdefault(solv, self._load_cube_sparse(
-                f's_{solv}.npy')).todense()
+            self.poly_cube_set.setdefault(poly,
+                                          self._shift_cube(
+                                              self._rotate_cube(
+                                                  self._load_cube(
+                                                      f'p_{poly}.npy'))).
+                                          astype(self.load_precision)
+                                          if self.aug_onthefly
+                                          else self._load_cube_dense(
+                                              f'p_{poly}.npy')),
+            self.solv_cube_set.setdefault(solv,
+                                          self._shift_cube(
+                                              self._rotate_cube(
+                                                  self._load_cube(
+                                                      f's_{solv}.npy'))).
+                                          astype(self.load_precision)
+                                          if self.aug_onthefly
+                                          else self._load_cube_dense(
+                                              f's_{solv}.npy'))
                 )
 
     def set_generator(self):

@@ -210,10 +210,10 @@ to [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/framew
 
    **Notes:**
 
-   * If a model is trained with the `--augment_onthefly` option, it will 
-   currently produce inconsistent results. `--augment_onthefly` option requires
-   interpolation which smooths out density images, so the correct predictions 
-   also need smoothed images. The issue will be addressed soon.
+   * If a model was trained with the `--augment_onthefly` option, it should be
+   invoked with `--augment_onthefly` option also for inference as interpolation
+   smooths out density images, so without this option the predictions would
+   be inconsistent.
 
 2. Training
    
