@@ -67,7 +67,7 @@ def generate_ff_conf(input_dir, output_dir, params):
 
     """
     for infile in os.listdir(input_dir):
-        if infile.endswith('.mol'):
+        if infile.endswith('.mol') or infile.endswith('.sdf'):
             job_name = os.path.splitext(infile)[0]
             infile_path = os.path.join(input_dir, infile)
             thresh = params.rdkit_thresh
@@ -99,6 +99,7 @@ def generate_qc_cube(input_dir, output_dir, params):
     pal = params.pal
     cube_n = params.cube_n
     dft_scheme = params.dft_scheme
+    nospin = params.nospin
     for xyz_file in xyz_file_list:
         if (params.component == 'solvent'
                 or (params.use_name_convention
@@ -113,7 +114,7 @@ def generate_qc_cube(input_dir, output_dir, params):
                             'files with s_ or p_ and use --use_name_convention'
                             'or use --component with solvent of polymer arg')
         xyz_path = os.path.join(input_dir, xyz_file)
-        orca_cube(xyz_path, pal, ispolymer, cube_n, dft_scheme)
+        orca_cube(xyz_path, pal, ispolymer, cube_n, dft_scheme, nospin)
     # Check whether output_dir contains already some of the required .cube's
     cube_file_list_done = [f for f in os.listdir(output_dir)
                            if f.endswith('.cube')]
@@ -124,16 +125,20 @@ def generate_qc_cube(input_dir, output_dir, params):
     num_cub = len(cube_file_list) // pal
     # High resolution .cube's are generated using orca_plot utility, which has
     # only serial mode, hence it is important to use multiprocessing.
-    processes = [Process(target=orca_rescale_cubes,
-                         args=(cube_file_list[i * num_cub:(i + 1) * num_cub],
-                               params)) for i in range(pal-1)]
-    processes.append(Process(target=orca_rescale_cubes,
-                             args=(cube_file_list[(pal - 1) * num_cub:],
-                                   params)))
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
+    if pal > 1:
+        processes = [Process(target=orca_rescale_cubes,
+                             args=(cube_file_list[i * num_cub:(i +
+                                                               1) * num_cub],
+                                   params)) for i in range(pal-1)]
+        processes.append(Process(target=orca_rescale_cubes,
+                                 args=(cube_file_list[(pal - 1) * num_cub:],
+                                       params)))
+        for p in processes:
+            p.start()
+        for p in processes:
+            p.join()
+    else:
+        orca_rescale_cubes(cube_file_list, params)
 
     for file in cube_file_list:
         shutil.move(file, os.path.join(output_dir, file))

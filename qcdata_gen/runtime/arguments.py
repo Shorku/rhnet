@@ -107,6 +107,10 @@ PARSER.add_argument('--conf_path',
                     type=str,
                     help="""CONFORMERS location, can also be taken from env""")
 
+PARSER.add_argument('--nospin', dest='nospin',
+                    action='store_true',
+                    help="""Output only electron density channel""")
+
 
 def parse_args(flags):
     return Munch({
@@ -127,5 +131,6 @@ def parse_args(flags):
         'cube_aug': flags.cube_aug,
         'extend_cube': flags.extend_cube,
         'orca_path': flags.orca_path,
-        'conf_path': flags.conf_path
+        'conf_path': flags.conf_path,
+        'nospin': flags.nospin
             })

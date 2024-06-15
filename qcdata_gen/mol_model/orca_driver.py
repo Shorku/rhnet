@@ -63,9 +63,9 @@ def orca_gen(input_dir, jobs_files, thresh_keep, level, pal, dft_scheme):
     return conformers
 
 
-def orca_cube(xyz_path, pal, ispolymer, cube_n, dft_scheme):
+def orca_cube(xyz_path, pal, ispolymer, cube_n, dft_scheme, nospin):
     qc_input_string = \
-        orca_dft_cube(pal, 3 if ispolymer else 1, cube_n, dft_scheme)
+        orca_dft_cube(pal, 3 if ispolymer else 1, cube_n, dft_scheme, nospin)
     orca_path = f'''{os.environ['ORCA']}/orca'''
     xyz_file = os.path.split(xyz_path)[1]
     orca_job_name = os.path.splitext(xyz_file)[0]
@@ -74,20 +74,31 @@ def orca_cube(xyz_path, pal, ispolymer, cube_n, dft_scheme):
 
     with open(xyz_path, 'r') as xyz:
         xyz_block = ''.join(xyz.readlines()[2:])
-        input_string = qc_input_string.format(os.path.splitext(xyz_file)[0],
-                                              os.path.splitext(xyz_file)[0],
-                                              xyz_block)
+        if nospin:
+            input_string = qc_input_string.format(
+                os.path.splitext(xyz_file)[0],
+                xyz_block)
+        else:
+            input_string = qc_input_string.format(
+                os.path.splitext(xyz_file)[0],
+                os.path.splitext(xyz_file)[0],
+                xyz_block)
     with open(orca_inp, 'w') as inp:
         inp.write(input_string)
     cli_opts = [orca_path, orca_inp]
     with open(orca_out, 'w') as out:
         subprocess.run(cli_opts, stdout=out)
 
-    eldens_cube_file = f'{orca_job_name}.eldens.cube'
-    spdens_cube_file = f'{orca_job_name}.spindens.cube'
+    if nospin:
+        eldens_cube_file = f'{orca_job_name}.eldens.cube'
+        spdens_cube_file = f'{orca_job_name}.spindens.cube'
 
-    return (os.path.abspath(eldens_cube_file),
-            os.path.abspath(spdens_cube_file))
+        return (os.path.abspath(eldens_cube_file),
+                os.path.abspath(spdens_cube_file))
+    else:
+        eldens_cube_file = f'{orca_job_name}.eldens.cube'
+
+        return os.path.abspath(eldens_cube_file)
 
 
 def orca_rescale_cubes(cube_files, params):

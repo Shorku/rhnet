@@ -1,9 +1,12 @@
 """Encapsulates all rdkit related functions"""
 
 
+import pathlib
+
 from rdkit import Chem
 from rdkit.Chem import rdDistGeom
 from rdkit.Chem import AllChem
+from rdkit.Chem import rdmolfiles
 
 
 def rdkit_gen(file_name, thresh, nconf, thresh_keep, threads=0, seed=None):
@@ -23,10 +26,18 @@ def rdkit_gen(file_name, thresh, nconf, thresh_keep, threads=0, seed=None):
                    conformers
 
     """
-    mol = Chem.MolFromMolFile(file_name, removeHs=False)
+    print('\n', file_name, '\n')
+    extension = pathlib.Path(file_name).suffix
+    if extension == '.mol':
+        mol = Chem.MolFromMolFile(file_name, removeHs=False)
+    elif extension == '.sdf':
+        mol = Chem.AddHs(next(rdmolfiles.SDMolSupplier(file_name)))
+    else:
+        print(f'{extension} is not an appropriate extension')
     param = Chem.rdDistGeom.ETKDGv2()
     param.pruneRmsThresh = thresh
-    param.clearConfs = False
+    # param.clearConfs = False
+    # param.enforceChirality = True
     if seed:
         param.randomSeed = seed
     param.numThreads = threads

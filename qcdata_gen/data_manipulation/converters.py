@@ -92,20 +92,26 @@ def convert_qc_cubes(input_dir, output_dir, params):
             job_name = os.path.splitext(os.path.splitext(file)[0])[0]
             input_file = os.path.join(input_dir, file)
             eldens, eldens_disp = convert_qc_cube(input_file, params)
-            input_file = os.path.join(input_dir, f'{job_name}.spindens.cube')
-            spdens, spdens_disp = convert_qc_cube(input_file, params)
-            dens = np.concatenate((eldens[:, :, :, np.newaxis],
-                                   spdens[:, :, :, np.newaxis]), axis=3)
+            if not params.nospin:
+                input_file = \
+                    os.path.join(input_dir, f'{job_name}.spindens.cube')
+                spdens, spdens_disp = convert_qc_cube(input_file, params)
+                dens = np.concatenate((eldens[:, :, :, np.newaxis],
+                                       spdens[:, :, :, np.newaxis]), axis=3)
+            else:
+                dens = eldens
             if 'predict' in params.exec_mode:
                 output_file = os.path.join(output_dir, f'{job_name}.npy')
                 np.save(output_file, dens.astype(np.float32))
                 continue
             output_file = os.path.join(output_dir, f'{job_name}_1.npy')
             np.save(output_file, dens.astype(np.float32))
-            max_disp = [max(i) for i in zip(eldens_disp, spdens_disp)]
+            if not params.nospin:
+                max_disp = [max(i) for i in zip(eldens_disp, spdens_disp)]
+            else:
+                max_disp = eldens_disp
             random_states = random.sample(unique_cube_rot_states, aug)
             for j in range(aug):
-                print('Rolling!')
                 rot_state = random_states[j]
                 disp_state = [random.randint(-i, i) for i in max_disp]
 
@@ -114,13 +120,22 @@ def convert_qc_cubes(input_dir, output_dir, params):
                 aug_eldens = np.rot90(aug_eldens, rot_state[1], axes=(2, 0))
                 aug_eldens = np.rot90(aug_eldens, rot_state[2], axes=(0, 1))
 
-                aug_spdens = np.roll(spdens, disp_state, axis=(0, 1, 2))
-                aug_spdens = np.rot90(aug_spdens, rot_state[0], axes=(1, 2))
-                aug_spdens = np.rot90(aug_spdens, rot_state[1], axes=(2, 0))
-                aug_spdens = np.rot90(aug_spdens, rot_state[2], axes=(0, 1))
-                aug_dens = np.concatenate((aug_eldens[:, :, :, np.newaxis],
-                                           aug_spdens[:, :, :, np.newaxis]),
-                                          axis=3)
+                if not params.nospin:
+                    aug_spdens = \
+                        np.roll(spdens, disp_state, axis=(0, 1, 2))
+                    aug_spdens = \
+                        np.rot90(aug_spdens, rot_state[0], axes=(1, 2))
+                    aug_spdens = \
+                        np.rot90(aug_spdens, rot_state[1], axes=(2, 0))
+                    aug_spdens = \
+                        np.rot90(aug_spdens, rot_state[2], axes=(0, 1))
+                if params.nospin:
+                    aug_dens = aug_eldens
+                else:
+                    aug_dens = \
+                        np.concatenate((aug_eldens[:, :, :, np.newaxis],
+                                        aug_spdens[:, :, :, np.newaxis]),
+                                       axis=3)
                 output_file = os.path.join(output_dir, f'{job_name}_{j+2}.npy')
                 np.save(output_file, aug_dens.astype(np.float32))
 

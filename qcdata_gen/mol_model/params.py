@@ -45,7 +45,7 @@ def orca_dft(pal, dft):
 '''
 
 
-def orca_dft_cube(pal, mult, n, dft):
+def orca_dft_cube(pal, mult, n, dft, nospin):
     """ Returns a template for an input file for a single-point calculation
      using DFT. ORCA job will make a single-point calculation and generate
      electron and spin densities in the .cube-files
@@ -65,10 +65,27 @@ def orca_dft_cube(pal, mult, n, dft):
     if dft == 'normal':
         method = 'B3LYP def2-TZVP'
     elif dft == 'fast':
-        method = 'PBE def2-SVP'
+        method = 'PBE def2-SVP RI Def2/J'
     else:
         raise ValueError(f'Unknown DFT methods scheme {dft}')
-    return f'''! UKS {method} tightscf
+    if nospin:
+        return f'''! UKS {method} tightscf
+%pal nprocs {pal} end
+%scf
+maxiter 300
+end
+%plots Format Cube
+dim1 {n}
+dim2 {n}
+dim3 {n}
+ElDens("{{}}.eldens.cube");
+end
+*xyz 0 {mult}
+{{}}
+*
+'''
+    else:
+        return f'''! UKS {method} tightscf
 %pal nprocs {pal} end
 %scf
 maxiter 300
