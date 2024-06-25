@@ -4,12 +4,14 @@
 import pathlib
 
 from rdkit import Chem
-from rdkit.Chem import rdDistGeom
 from rdkit.Chem import AllChem
+from rdkit.Chem import rdmolops
+from rdkit.Chem import rdDistGeom
 from rdkit.Chem import rdmolfiles
 
 
-def rdkit_gen(file_name, thresh, nconf, thresh_keep, threads=0, seed=None):
+def rdkit_gen(file_name, thresh, nconf, thresh_keep, enforce_chirality,
+              threads=0, seed=None):
     """ Read input geometry from .mol-file and generate conformations
 
     Args:
@@ -17,6 +19,7 @@ def rdkit_gen(file_name, thresh, nconf, thresh_keep, threads=0, seed=None):
         thresh (float): conformers energy difference criteria
         nconf (int): maximum number of conformers to be generated
         thresh_keep (float): Energy window to keep conformers within, kJ/mol
+        enforce_chirality (bool): ask RDKit to keep chirality
         threads (int): number of threads rdkit will use. Defaults to 0 meaning
                        all available
         seed (int): random seed to be used by rdkit
@@ -27,17 +30,20 @@ def rdkit_gen(file_name, thresh, nconf, thresh_keep, threads=0, seed=None):
 
     """
     print('\n', file_name, '\n')
+    param = Chem.rdDistGeom.ETKDGv2()
+    param.pruneRmsThresh = thresh
     extension = pathlib.Path(file_name).suffix
     if extension == '.mol':
         mol = Chem.MolFromMolFile(file_name, removeHs=False)
+        param.clearConfs = False
+        if enforce_chirality:
+            rdmolops.AssignStereochemistryFrom3D(mol)
+            param.enforceChirality = True
     elif extension == '.sdf':
         mol = Chem.AddHs(next(rdmolfiles.SDMolSupplier(file_name)))
     else:
         print(f'{extension} is not an appropriate extension')
-    param = Chem.rdDistGeom.ETKDGv2()
-    param.pruneRmsThresh = thresh
-    # param.clearConfs = False
-    # param.enforceChirality = True
+        return []
     if seed:
         param.randomSeed = seed
     param.numThreads = threads

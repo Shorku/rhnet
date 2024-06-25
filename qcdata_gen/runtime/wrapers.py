@@ -16,9 +16,10 @@ try:
     from mol_model.rdkit_driver import rdkit_gen
 except ModuleNotFoundError:
     print('Warning: RDKit is missing, this may cause script execution failure')
-from mol_model.conformers_driver import conformers_filter
-from mol_model.orca_driver import orca_gen, orca_cube, orca_rescale_cubes
 from mol_model.orca_driver import orca_tmp_clear
+from mol_model.orca_driver import orca_rescale_cubes
+from mol_model.orca_driver import orca_gen, orca_cube
+from mol_model.conformers_driver import conformers_filter
 from utils.utils import sort_xyz_into_jobs, write_conf_from_list
 
 
@@ -67,15 +68,16 @@ def generate_ff_conf(input_dir, output_dir, params):
 
     """
     for infile in os.listdir(input_dir):
-        if infile.endswith('.mol') or infile.endswith('.sdf'):
-            job_name = os.path.splitext(infile)[0]
-            infile_path = os.path.join(input_dir, infile)
-            thresh = params.rdkit_thresh
-            thresh_keep = params.rdkit_thresh_keep
-            nconf = params.rdkit_nconf
+        job_name = os.path.splitext(infile)[0]
+        infile_path = os.path.join(input_dir, infile)
+        thresh = params.rdkit_thresh
+        thresh_keep = params.rdkit_thresh_keep
+        nconf = params.rdkit_nconf
+        enforce_chirality = params.enforce_chirality
 
-            conformers = rdkit_gen(infile_path, thresh, nconf, thresh_keep)
-            write_conf_from_list(job_name, conformers, output_dir)
+        conformers = rdkit_gen(infile_path, thresh, nconf, thresh_keep,
+                               enforce_chirality)
+        write_conf_from_list(job_name, conformers, output_dir)
 
 
 def generate_qc_cube(input_dir, output_dir, params):

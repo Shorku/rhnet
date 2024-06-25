@@ -74,6 +74,10 @@ PARSER.add_argument('--rdkit_thresh_keep',
                     default=20,
                     help="""Energy window to keep conformers within, kJ/mol""")
 
+PARSER.add_argument('--enforce_chirality', dest='enforce_chirality',
+                    action='store_true',
+                    help="""Enforce RDKit to preserve chirality """)
+
 PARSER.add_argument('--orca_thresh_keep',
                     type=float,
                     default=5,
@@ -125,6 +129,7 @@ def parse_args(flags):
         'rdkit_thresh': flags.rdkit_thresh,
         'rdkit_nconf': flags.rdkit_nconf,
         'rdkit_thresh_keep': flags.rdkit_thresh_keep,
+        'enforce_chirality': flags.enforce_chirality,
         'orca_thresh_keep': flags.orca_thresh_keep,
         'cube_n': flags.cube_n,
         'cube_spacing': flags.cube_spacing,
