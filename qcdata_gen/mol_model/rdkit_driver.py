@@ -33,14 +33,19 @@ def rdkit_gen(file_name, thresh, nconf, thresh_keep, enforce_chirality,
     param = Chem.rdDistGeom.ETKDGv2()
     param.pruneRmsThresh = thresh
     extension = pathlib.Path(file_name).suffix
-    if extension == '.mol':
+    if extension.lower() == '.mol':
         mol = Chem.MolFromMolFile(file_name, removeHs=False)
         param.clearConfs = False
         if enforce_chirality:
             rdmolops.AssignStereochemistryFrom3D(mol)
             param.enforceChirality = True
-    elif extension == '.sdf':
+    elif extension.lower() == '.sdf':
         mol = Chem.AddHs(next(rdmolfiles.SDMolSupplier(file_name)))
+    elif extension.lower() == '.smi':
+        mol = Chem.AddHs(next(rdmolfiles.SmilesMolSupplier(file_name,
+                                                           titleLine=False)))
+        if enforce_chirality:
+            param.enforceChirality = True
     else:
         print(f'{extension} is not an appropriate extension')
         return []
