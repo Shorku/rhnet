@@ -2,7 +2,15 @@
  
 This repository contains a script to train and evaluate a convolutional neural
 network (CNN) to predict a gas/solvent weight fraction in a (possibly swollen) 
-polymer using a pre-calculated distribution of the electron density.
+polymer using a pre-calculated distribution of the electron density described
+in [*Polymer Chemistry* paper](https://doi.org/10.1039/D3PY01028G).
+
+**Note:** 
+* The project will no longer be updated. 
+For further developments check  
+[RhNet2](https://github.com/Shorku/rhnet2) model.
+* Dataset updates will be available in a dedicated 
+[repository](https://github.com/Shorku/SorptionByPolymers)
 
 <img src="images/dalle_fantasy.png" width="300">
 
@@ -31,7 +39,6 @@ polymer using a pre-calculated distribution of the electron density.
      * [qcdata_gen setup](#qcdata_gen-setup)
      * [qcdata_gen run for inference data](#qcdata_gen-run-for-inference-data)
      * [qcdata_gen run for training data](#qcdata_gen-run-for-training-data)
-- [TODO](#todo)
 - [Notes](#notes)
      * [Excluded data sources](#excluded-data-sources)
      * [Other notes](#other-notes)
@@ -719,16 +726,6 @@ polymer,solvent,mn,mw,cryst,tg,dens,pmin,pmax,npstep,tmin,tmax,ntstep
     * conformational isomer of the 
       -CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>CH<sub>2</sub>- repeating unit 
       number `1`
-* `data/smiles.tar.xz` archive contains polymers' repeating units and solvents
-    in SMILES format. It is provided within the dataset to simplify its use in 
-    fitting of models with other than electron density molecular 
-    representations. Dangling bonds in polymers' repeating units are caped with
-    Fr-atoms. Filenames in the archive use the following convention:
-  * Filenames contain two indexes separated by `_`
-  * The first index is a letter: either `p`(olymer) or `s`(olvent)
-  * Second index is an ID number of polymer specified in 
-      `data/list_of_polymers.csv` or solvent specified in 
-      `data/list_of_solvents.csv`
 * `data/polymers.txt` contains python dictionary defining the number of
     available conformations for each polymer repeating unit (called "cut" in 
     the code for shortness): 
@@ -1189,35 +1186,6 @@ optional arguments:
                         CONFORMERS location, can also be taken from env
 
 ```
-
-
-## TODO
-### General
-- [ ] complete documentation
-### Inference
-- [x] inference utility
-- [x] XYZ (geometry) to ready-to-use NPY (image) automation (for inference)
-- [x] convert pressure and temperature back to MPa and K in inference log
-- [x] convert predicted values to weight fractions in inference log
-- [x] add option to choose printing predicted values in cm3(STP)/cm3 
-- [x] prune and upload fitted models
-- [ ] utility for nice inference reports (Matplotlib + LaTeX?)
-- [x] option for a lighter (RI-PBE/def2-SVP?) electron density calculation
-### Maintenance
-- [ ] test automation
-- [ ] compactize model definition code
-- [x] refactor stuff triggering SettingWithCopyWarning
-### Further development
-- [x] on-the-fly translational and rotational augmentation
-- [ ] sparse convolutions
-### Misc minor stuff
-- [ ] unify feature selection
-- [ ] add ORCA docker
-- [x] check smiles.tar.xz for non-minimal polymer repeating units
-- [x] check smiles.tar.xz for presence of S-O bonds instead of S=O bonds
-- [x] add to qcdata_gen script a check for a single-atom input geometry
-- [x] merge solvents 31 and 63 - both are SO2
-- [x] disable RDKit import in cube_to_predict mode
 
 
 ## Notes
